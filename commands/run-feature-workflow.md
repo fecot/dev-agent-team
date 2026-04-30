@@ -1,0 +1,148 @@
+# Command: /run-feature-workflow
+
+## Purpose
+
+`workflows/feature-development.md` で定義した **8 Phase の標準開発フロー** を、Issue や開発依頼に対して順番に適用するための **入口コマンド** 。
+
+このコマンドは「実装を進めるためのコマンド」ではなく、**Issue から PR、リリース確認までの開発プロセス全体を、抜け漏れなく安全に進めるためのオーケストレータ** として機能する。
+
+- 個別のコマンド（`/issue-to-plan` `/codebase-explore` `/safe-implement` `/pr-review`）を、ワークフローに沿って **正しい順序で・適切な停止判断とともに** 呼び出す
+- 各 Phase の Stop Condition を都度評価し、満たせないときは次に進まない
+- Human Decision Point では人間の判断を待ち、勝手に進めない
+- 実行中に作成・更新する成果物の置き場を統一し、後続の Phase が同じ前提で動けるようにする
+
+## When to Use
+
+以下のような変更で使う:
+
+- 新機能追加
+- 既存機能の仕様変更
+- 影響範囲が複数レイヤー（UI / API / DB / バッチ / 権限など）にまたがる変更
+- 実装前に要件整理や既存コード調査が必要な変更
+- PR 前の品質を高めたい変更（レビューでの手戻りを減らしたい場合）
+
+## When Not to Use
+
+以下のケースでは使わない、または軽量フローに切り替える:
+
+- typo 修正・コメント修正
+- 文言だけの軽微な修正（i18n 文字列の一部置換など）
+- 1 ファイルだけの明確な変更（影響が局所で、要件が自明）
+- 緊急 hotfix（別途 hotfix workflow を使うべき。本コマンドは「停止して確認」を多く挟むため、緊急対応には向かない）
+
+軽微な修正で本コマンドを使うと、フェーズオーバーヘッドのほうが大きくなる。判断に迷うなら、Phase 1 だけ実行して「Phase 2 以降が必要かどうか」自体を成果物にする運用でも良い。
+
+## 使い方
+
+```
+/run-feature-workflow <イシューURL or イシュー本文 or 依頼内容>
+```
+
+## Inputs
+
+以下を受け取れる。すべて任意だが、不足分は Phase 1 の確認事項として人間に問い直す:
+
+- **Issue 本文**: タイトルと本文（GitHub Issue / Jira / Slack 抜粋など）
+- **目的**: なぜこの変更が必要か（背景・期待する効果）
+- **期待する変更**: ユーザー目線での変化、画面・APIの差分
+- **制約**: スケジュール / リリース時期 / 互換性要件 / 性能要件
+- **対象ブランチ**: 派生元ブランチ名、PR 先ブランチ
+- **関連 URL**: 設計ドキュメント / Figma / 過去の類似 PR / 障害票
+- **既知の注意点**: 触ってはいけない領域、過去のトラブル、依存サービスの不安定要素
+
+不足している入力があっても **推測で埋めない**。空のまま Phase 1 に渡し、確認事項として上げる。
+
+## Execution Rules
+
+このコマンドの実行中、以下のルールを **必ず** 守る:
+
+- `workflows/feature-development.md` を **必ず参照** する（各 Phase の Input / Action / Output / Stop Condition の定義はそちらが正）
+- Phase を **飛ばさない**（軽量化したい場合でも明示的にスキップ理由を残す）
+- 各 Phase で **Output を明示** する（後続 Phase が読める形で残す）
+- **Stop Condition に該当したら次に進まない**（人間に確認 or 前 Phase に戻る）
+- **Human Decision Point では人間の判断を待つ**（AI が代理判断しない）
+- 実装中に **計画外の変更が必要になったら停止** し、Phase 4 の計画を更新してから再開する
+- **既存設計を尊重** する（類似実装が見つかればパターンを踏襲）
+- 差分は **小さく保つ**（1 PR に詰め込まない、ステップ単位でコミットを切る）
+- 不明点は **推測で埋めず、確認事項** として出す
+- リファクタリングと機能追加を **同一コミットに混ぜない**
+
+## Phase Execution Format
+
+各 Phase の出力は以下の統一フォーマットで残す。後続 Phase が読み取りやすく、欠落も検出しやすくするため。
+
+```
+### Phase X: {Phase Name}
+
+- Input: {このPhaseで参照した成果物・前Phaseの出力}
+- Actions: {実施したアクション（箇条書き）}
+- Findings: {判明したこと・調査で見つけた事実}
+- Output: {このPhaseで生成した成果物のパス・名称}
+- Risks: {検出したリスク（深刻度付き）}
+- Stop Condition Check: {Stop Conditionそれぞれに対する評価。Pass / Fail / N/A}
+- Human Decision Required: {このPhaseで人間に判断を求める事項。なければ "なし"}
+- Next: {次にどのPhaseへ進むか、または停止する理由}
+```
+
+### 各 Phase で参照する Agent / Command / Skill / Template
+
+| # | Phase | Agent | Command / Skill / Template |
+|---|---|---|---|
+| 1 | Intake | `agents/product-interpreter.md` | `commands/issue-to-plan.md` / `skills/requirement-analysis.md` |
+| 2 | Discovery | `agents/codebase-explorer.md` | `commands/codebase-explore.md` / `skills/codebase-reading.md` |
+| 3 | Impact Analysis | `agents/architecture-reviewer.md` | `skills/impact-analysis.md` |
+| 4 | Implementation Planning | `agents/implementation-driver.md` | `templates/implementation-plan-template.md` |
+| 5 | Safe Implementation | `agents/implementation-driver.md` | `commands/safe-implement.md` / `skills/safe-refactoring.md` |
+| 6 | Test Design | `agents/test-strategist.md` | `skills/test-design.md` |
+| 7 | Review Gate | `agents/review-gatekeeper.md` | `commands/pr-review.md` / `templates/pr-description-template.md` |
+| 8 | Release Check | `agents/release-captain.md` | — |
+
+## Artifacts
+
+実行中に作成・更新する成果物。`workflows/feature-development.md` の各 Phase Output と1対1で対応する。
+
+| 成果物 | 生成 Phase | パス例 |
+|---|---|---|
+| Requirement Summary | Phase 1 | `.dev-agent-team/requirements/{{issue-id}}.md` |
+| Investigation Report | Phase 2 | `.dev-agent-team/reports/investigation-{{issue-id}}.md` |
+| Impact Analysis | Phase 3 | `.dev-agent-team/reports/impact-{{issue-id}}.md` |
+| Implementation Plan | Phase 4 | `.dev-agent-team/plans/implementation-plan-{{issue-id}}.md` |
+| Implementation Log | Phase 5 | `.dev-agent-team/logs/implementation-{{issue-id}}.md` |
+| Test Plan | Phase 6 | `.dev-agent-team/plans/test-plan-{{issue-id}}.md` |
+| PR Review Notes | Phase 7 | `.dev-agent-team/reviews/pr-review-{{issue-id}}.md` |
+| PR Description | Phase 7 | `.dev-agent-team/reviews/pr-description-{{issue-id}}.md` |
+| Release Checklist | Phase 8 | `.dev-agent-team/releases/release-checklist-{{issue-id}}.md` |
+
+`.dev-agent-team/` ディレクトリは案件ごとの作業ディレクトリ配下に作る想定。`{{issue-id}}` は Issue 番号 / チケット ID / 短いスラッグなど、識別可能なものを使う。
+
+## オプション
+
+- `--start-from <phase>`: 指定 Phase から開始（例: 既に要件整理済みなら `--start-from 2`）
+- `--stop-after <phase>`: 指定 Phase で停止（例: `--stop-after 4` で計画レビューまで）
+- `--no-artifacts`: 成果物ファイルを書き出さず、ターミナル出力のみ
+- `--dry`: 実装は行わず、Phase 1〜4 と Phase 6（テスト計画）のみ実施
+
+## 実行フロー（概要）
+
+1. 入力された Issue / 依頼内容を解釈する（不足は確認事項として上げる）
+2. Phase 1 から順に、上記 Phase Execution Format に従って実行する
+3. 各 Phase 終了時に Stop Condition を評価し、Pass なら次へ、Fail なら停止する
+4. Human Decision Required がある Phase では、人間の判断を受けるまで停止する
+5. 全 Phase 完了後、生成された成果物のリストと、PR / リリースに必要な次アクションを提示する
+
+## セーフガード
+
+以下のいずれかに該当したら、Phase をまたいでも **停止して確認を求める**:
+
+- 入力に対して Phase 1 の完了条件が定義できない
+- DB 変更 / 権限変更 / 外部連携変更が見つかったのに、対応する観点が成果物に欠落している
+- 実装案が 1 案しかない、または最小変更案がない
+- 計画と実装の差分が説明不能なほど広がっている
+- テスト観点が完了条件と紐づいていない
+- ロールバック手順が「実行不可能」な状態（不可逆なマイグレーションなど）
+
+## 注意
+
+- このコマンドは **判断材料を出すもの** であり、判断するのは人間。
+- 「速く済ませる」より「抜け漏れを出さない」を優先する。慣れると各 Phase の判断は数分で済む。
+- 軽微な修正には向かない。`When Not to Use` を確認してから起動する。

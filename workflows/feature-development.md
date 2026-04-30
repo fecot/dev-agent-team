@@ -12,11 +12,29 @@
 - **小さな差分で進める**（フェーズを跳ばさない）
 - **不明点は推測で埋めず、必ず確認事項として上げる**
 - **各フェーズには明確な Stop Condition があり、満たせない場合は次に進まない**
+- **対象リポジトリの Project Rules を、dev-agent-team の共通ルールより優先する**
+
+### Rule Priority
+
+このワークフローでの判断は以下の優先順位に従う:
+
+1. **ユーザー（人間）の明示指示**
+2. **対象リポジトリの Project Rules**
+   （`CLAUDE.md` / `README.md` / `docs/` 配下 / `.github/pull_request_template.md` / `package.json` 等）
+3. **dev-agent-team の共通 Workflow / Commands / Agents / Skills**
+4. **一般的なベストプラクティス**
+
+> dev-agent-team の共通ルールは、対象リポジトリの Project Rules を **上書きしない**。衝突した場合は対象リポジトリのルールを採用し、判断がつかなければ人間に確認する。
+
+### 前提: Project Context Loading
+
+8 Phase に入る前に、**Phase 0** として対象リポジトリの Project Rules・技術スタック・禁止事項を読み込む。Phase 0 を経ていない状態で Phase 1 以降に進んではならない。詳細は下記 Phase 0 を参照。
 
 ### Phase 一覧
 
 | # | Phase | 主担当 Agent | 主要 Command / Skill / Template |
 |---|---|---|---|
+| 0 | Project Context Loading | — | `templates/project-rules-template.md` |
 | 1 | Intake | `product-interpreter` | `commands/issue-to-plan.md` |
 | 2 | Discovery | `codebase-explorer` | `commands/codebase-explore.md` / `skills/codebase-reading.md` |
 | 3 | Impact Analysis | `architecture-reviewer` | `skills/impact-analysis.md` |
@@ -29,6 +47,56 @@
 ---
 
 ## 2. Phases
+
+### Phase 0: Project Context Loading
+
+対象リポジトリのルール・技術スタック・禁止事項を読み込み、以降の Phase で従うべき制約を明確化する。**この Phase をスキップして Phase 1 に進んではならない。**
+
+- **使用 Template**: `templates/project-rules-template.md`（対象リポジトリ側で記入する雛形）
+
+#### Input
+- 対象リポジトリの作業ディレクトリ
+- 対象リポジトリ内に既に `CLAUDE.md` / `docs/` / `.github/` がある場合はそれら
+
+#### Action
+- 以下を順に読む:
+  - 対象リポジトリの `CLAUDE.md`
+  - `README.md`
+  - `docs/` 配下の開発ルール
+  - `.github/pull_request_template.md`
+  - `package.json` / `composer.json` / `pyproject.toml` / `go.mod` などの技術スタック情報
+  - テストコマンド / Lint / typecheck コマンド
+  - 実際のディレクトリ構成（`src/` 直下を `Glob`）
+- 以下のルールを抽出して整理する:
+  - 禁止事項
+  - DB変更ルール
+  - API互換性ルール
+  - フロントエンド実装ルール
+  - バックエンド実装ルール
+  - セキュリティ・個人情報の取り扱い
+  - PR ルール
+  - リリースルール
+- 対象リポジトリに Project Rules ファイルが存在しない場合は、`templates/project-rules-template.md` をコピーして埋めることを **人間に提案** する
+
+#### Output
+- 対象リポジトリ側に `.dev-agent-team/project-context.md` を作成
+  - 上記の確認内容のスナップショット
+  - 「未確定」「未読」項目は明示的にラベルを付ける
+  - Project Rules と dev-agent-team 共通ルールの **衝突点** があれば併記する
+
+#### Next Phase に渡すもの
+- Project Context のサマリ
+- 衝突点があれば、人間が決めた優先方針
+
+#### Stop Condition
+- 対象リポジトリのルールの所在が確認できていない
+- 技術スタック・テスト方法・Lint/typecheck コマンドが不明
+- DB変更ルールが不明なまま、依頼内容に DB 変更が含まれる可能性がある
+- 認証・権限・課金・個人情報に関わるルールが不明なまま、依頼内容にそれらが関与する
+- Project Rules と dev-agent-team の共通ルールが衝突しており、優先順位の判断材料が揃っていない
+- 衝突解消のための **人間の判断が未取得**
+
+---
 
 ### Phase 1: Intake
 
@@ -311,6 +379,8 @@ AIが勝手に進めず、**必ず人間が判断する** ポイント。
 
 | 判断ポイント | 対応 Phase | 補足 |
 |---|---|---|
+| Project Rules の整備 | Phase 0 | ルールファイルがない場合、テンプレートから新規作成するか |
+| ルール衝突の解消 | Phase 0 | Project Rules と dev-agent-team 共通ルールの優先方針 |
 | 要件の最終決定 | Phase 1 | 確認事項への回答・スコープ確定 |
 | 不明点の解消 | Phase 1〜3 | 推測で埋めない |
 | 実装案の採用 | Phase 4 | 最小案 / 標準案のうちどれを採るか |
@@ -399,10 +469,11 @@ ReleaseCaptain が:
 
 ## 5. このワークフローの使い方
 
-1. Issue や依頼を受け取ったらまず `commands/issue-to-plan.md` を起動する
-2. Phase 1 の確認事項に回答する
-3. 各 Phase の Stop Condition を満たさない限り、次に進まない
-4. Human Decision Points では必ず人間が判断する
-5. 計画外の事項が見つかったら、いったん停止して計画を更新する
+1. **対象リポジトリに `CLAUDE.md` / Project Rules があるか確認** する。なければ `templates/project-rules-template.md` をコピーして埋める
+2. `commands/run-feature-workflow.md` を起動する。Phase 0 で Project Context を読み込ませる
+3. Phase 1 の確認事項に回答する
+4. 各 Phase の Stop Condition を満たさない限り、次に進まない
+5. Human Decision Points では必ず人間が判断する
+6. 計画外の事項が見つかったら、いったん停止して計画を更新する
 
 > このワークフローは「速さ」より「抜け漏れのなさ」を優先するための型です。慣れれば各 Phase の判断は数分で済みます。

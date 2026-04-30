@@ -52,10 +52,24 @@
 
 不足している入力があっても **推測で埋めない**。空のまま Phase 1 に渡し、確認事項として上げる。
 
+## Rule Priority
+
+このコマンドが実行中に判断する際は、以下の優先順位を **必ず** 守る:
+
+1. **ユーザー（人間）の明示指示**
+2. **対象リポジトリの Project Rules**
+   （`CLAUDE.md` / `README.md` / `docs/` 配下の開発ルール / `.github/pull_request_template.md` / 既存設定ファイル等）
+3. **dev-agent-team の共通 Workflow / Commands / Agents / Skills**
+4. **一般的なベストプラクティス**
+
+> dev-agent-team の共通ルールは、対象リポジトリの Project Rules を **上書きしてはいけない**。衝突した場合は対象リポジトリのルールを採用し、それでも判断がつかない場合は人間に確認する。
+
 ## Execution Rules
 
 このコマンドの実行中、以下のルールを **必ず** 守る:
 
+- 上記 **Rule Priority** に従って判断する
+- **Phase 0（Project Context Loading）を必ず最初に実行** する。Project Rules を読まずに Phase 1 以降には進まない
 - `workflows/feature-development.md` を **必ず参照** する（各 Phase の Input / Action / Output / Stop Condition の定義はそちらが正）
 - Phase を **飛ばさない**（軽量化したい場合でも明示的にスキップ理由を残す）
 - 各 Phase で **Output を明示** する（後続 Phase が読める形で残す）
@@ -88,6 +102,7 @@
 
 | # | Phase | Agent | Command / Skill / Template |
 |---|---|---|---|
+| 0 | Project Context Loading | — | `templates/project-rules-template.md` |
 | 1 | Intake | `agents/product-interpreter.md` | `commands/issue-to-plan.md` / `skills/requirement-analysis.md` |
 | 2 | Discovery | `agents/codebase-explorer.md` | `commands/codebase-explore.md` / `skills/codebase-reading.md` |
 | 3 | Impact Analysis | `agents/architecture-reviewer.md` | `skills/impact-analysis.md` |
@@ -97,12 +112,62 @@
 | 7 | Review Gate | `agents/review-gatekeeper.md` | `commands/pr-review.md` / `templates/pr-description-template.md` |
 | 8 | Release Check | `agents/release-captain.md` | — |
 
+## Phase 0: Project Context Loading
+
+Phase 1 以降に進む前に、対象リポジトリのルール・技術スタック・禁止事項を読み込む。**この Phase をスキップしてはいけない。**
+
+### 確認すること
+
+以下を順に読み、見つかった内容を成果物に転記する:
+
+- 対象リポジトリの `CLAUDE.md`
+- `README.md`
+- `docs/` 配下の開発ルール（コーディング規約 / ADR / 設計ドキュメント）
+- `.github/pull_request_template.md`
+- `package.json` / `composer.json` / `pyproject.toml` / `go.mod` 等の依存・スクリプト定義
+- テストコマンド（`npm test` / `pytest` / `go test ./...` 等）
+- Lint / typecheck コマンド
+- ディレクトリ構成（実際の `src/` 直下を `Glob`）
+- 禁止事項（Do Not セクション / 過去のポストモーテム）
+- DB変更ルール（マイグレーションツール / 後方互換要件）
+- API互換性ルール（破壊的変更時の手順 / バージョニング）
+- フロントエンド実装ルール（状態管理 / スタイリング / アクセシビリティ）
+- バックエンド実装ルール（認証・認可 / バリデーション / ジョブ）
+- セキュリティ・個人情報の取り扱い
+- PR ルール / Release ルール
+
+対象リポジトリに `CLAUDE.md` / project rules ファイルが存在しない場合は、`templates/project-rules-template.md` をコピーして埋めることを **人間に提案** する。空欄のまま進めない。
+
+### 成果物
+
+- **対象リポジトリ側** に作成する: `.dev-agent-team/project-context.md`
+  - 上記項目をそのまま転記したスナップショット
+  - 「未確定」「未読」項目は明示的にラベルを付ける
+  - 衝突点（Project Rules vs dev-agent-team 共通ルール）があれば併記する
+
+### Stop Condition
+
+以下のいずれかに該当したら Phase 1 に進まない:
+
+- 対象リポジトリのルール（`CLAUDE.md` 等）の所在が確認できていない
+- 技術スタック・テスト方法・Lint/typecheck コマンドが不明
+- DB変更ルールが不明なまま、依頼内容に DB 変更が含まれる可能性がある
+- 認証・権限・課金・個人情報に関わるルールが不明なまま、依頼内容にそれらが関与する
+- Project Rules と dev-agent-team の共通ルールが衝突しており、優先順位の判断材料が揃っていない
+- 衝突解消のための **人間の判断が未取得**
+
+### Human Decision Required
+
+- Project Rules ファイルが存在しない場合、テンプレートから新規作成するかどうか
+- Project Rules と dev-agent-team の共通ルールが衝突した場合の採用方針
+
 ## Artifacts
 
 実行中に作成・更新する成果物。`workflows/feature-development.md` の各 Phase Output と1対1で対応する。
 
 | 成果物 | 生成 Phase | パス例 |
 |---|---|---|
+| Project Context | Phase 0 | `.dev-agent-team/project-context.md` |
 | Requirement Summary | Phase 1 | `.dev-agent-team/requirements/{{issue-id}}.md` |
 | Investigation Report | Phase 2 | `.dev-agent-team/reports/investigation-{{issue-id}}.md` |
 | Impact Analysis | Phase 3 | `.dev-agent-team/reports/impact-{{issue-id}}.md` |
@@ -125,10 +190,11 @@
 ## 実行フロー（概要）
 
 1. 入力された Issue / 依頼内容を解釈する（不足は確認事項として上げる）
-2. Phase 1 から順に、上記 Phase Execution Format に従って実行する
-3. 各 Phase 終了時に Stop Condition を評価し、Pass なら次へ、Fail なら停止する
-4. Human Decision Required がある Phase では、人間の判断を受けるまで停止する
-5. 全 Phase 完了後、生成された成果物のリストと、PR / リリースに必要な次アクションを提示する
+2. **Phase 0 で対象リポジトリの Project Rules / 技術スタック / 禁止事項を読み込む**
+3. Phase 1 から順に、上記 Phase Execution Format に従って実行する
+4. 各 Phase 終了時に Stop Condition を評価し、Pass なら次へ、Fail なら停止する
+5. Human Decision Required がある Phase では、人間の判断を受けるまで停止する
+6. 全 Phase 完了後、生成された成果物のリストと、PR / リリースに必要な次アクションを提示する
 
 ## セーフガード
 

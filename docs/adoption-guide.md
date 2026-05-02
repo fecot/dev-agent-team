@@ -24,16 +24,18 @@ dev-agent-team は **アプリケーションコードではありません**。
 | --- | --- | --- | --- |
 | `CLAUDE.md` | 対象リポジトリ管理者 | Claude Codeに対象プロジェクトの前提・作業ルールを伝える | Git管理推奨 |
 | `.dev-agent-team/project-rules.md` | 対象リポジトリ管理者 | 技術スタック、ディレクトリ構成、テスト方法、禁止事項、承認必須領域を定義する | Git管理推奨 |
-| `.dev-agent-team/project-context.md` | Claude Code | Phase 0でProject Rulesやリポジトリ情報を読み取って生成する実行時コンテキスト | 運用に応じて判断 |
-| `.dev-agent-team/requirements/` | Claude Code | Phase 1の要件整理成果物を保存する | 運用に応じて判断 |
-| `.dev-agent-team/reports/` | Claude Code | 調査レポート、影響範囲分析を保存する | 運用に応じて判断 |
-| `.dev-agent-team/plans/` | Claude Code | 実装計画、テスト計画を保存する | 運用に応じて判断 |
-| `.dev-agent-team/reviews/` | Claude Code | PRレビュー、PR説明文を保存する | 運用に応じて判断 |
-| `.dev-agent-team/releases/` | Claude Code | リリース前チェックリストを保存する | 運用に応じて判断 |
+| `.dev-agent-team/project-context.md` | Claude Code | Phase 0でProject Rulesやリポジトリ情報を読み取って生成する実行時コンテキスト | 原則 Git 管理しない |
+| `.dev-agent-team/runs/` | Claude Code | Issue / Run 単位の Phase 成果物（推奨レイアウト） | 原則 Git 管理しない |
+| `.dev-agent-team/requirements/` | Claude Code | Phase 1の要件整理成果物（Phase 別レイアウト） | 原則 Git 管理しない |
+| `.dev-agent-team/reports/` | Claude Code | 調査レポート、影響範囲分析（Phase 別レイアウト） | 原則 Git 管理しない |
+| `.dev-agent-team/plans/` | Claude Code | 実装計画、テスト計画（Phase 別レイアウト） | 原則 Git 管理しない |
+| `.dev-agent-team/reviews/` | Claude Code | PRレビュー、PR説明文（Phase 別レイアウト） | 原則 Git 管理しない |
+| `.dev-agent-team/releases/` | Claude Code | リリース前チェックリスト（Phase 別レイアウト） | 原則 Git 管理しない |
+| `.dev-agent-team/archive/` | 任意 | 後から参照したい古い Run の保管先 | 原則 Git 管理しない |
 
-`project-rules.md` は、対象リポジトリの開発ルールそのものなので Git 管理を推奨します。一方で、`project-context.md` や各Phaseの成果物は、チームの運用に応じて Git 管理するか、PR作成時の一時成果物として扱うかを決めてください。
+`project-rules.md` は、対象リポジトリの開発ルールそのものなので Git 管理を推奨します。それ以外の `project-context.md` や各 Phase / Run の成果物は **原則 Git 管理しない** 一時的な開発ログとして扱います。詳細な保存・削除・アーカイブの方針は [§9 Artifacts Retention Policy](#9-artifacts-retention-policy) を参照してください。
 
-`.dev-agent-team/` ディレクトリは、**ワークフロー実行で生成される成果物の置き場** として機能します。`requirements/` 〜 `releases/` までの各サブディレクトリは、ワークフロー実行時に必要に応じて自動的に作られていく想定です（最初から手で作っておく必要はありません）。
+`.dev-agent-team/` ディレクトリは、**ワークフロー実行で生成される成果物の置き場** として機能します。`runs/` 配下、または `requirements/` 〜 `releases/` の Phase 別サブディレクトリは、ワークフロー実行時に必要に応じて自動的に作られていく想定です（最初から手で作っておく必要はありません）。
 
 ---
 
@@ -174,10 +176,110 @@ Project Rules は「Claude Code に正確に伝わる文書」である必要が
 - **Stop Condition が出たら無理に進めない** — Stop Condition は「ここで止まれ」というシグナルです。バイパスせず、足りない情報を埋めるか、人間に判断を仰ぐ
 - **Human Decision Point は人間が判断する** — 採用案・DB変更承認・リリース可否は AI に委ねない。判断材料は AI が出すが、判断は人間がする
 - **失敗事例が出たら Project Rules に反映する** — レビューで指摘されたパターン、本番で起きた問題、見落とした観点は、次回以降の Phase 0 で拾えるように **Project Rules に追記** する。これによって型は時間とともに鍛えられる
+- **Artifacts は原則として一時成果物として扱う** — 詳細は次の §9 Artifacts Retention Policy を参照
 
 ---
 
-## 8. まとめ
+## 9. Artifacts Retention Policy
+
+ワークフローを使い続けると、対象リポジトリの `.dev-agent-team/` 配下に成果物（Artifacts）が蓄積していきます。Artifacts は開発判断の履歴として価値がありますが、**すべてを Git 管理するとリポジトリが散らかります**。Artifacts の保存方針・Git 管理方針・削除/アーカイブ方針をここで明確にします。
+
+### 基本方針
+
+- `.dev-agent-team/project-rules.md` は **対象リポジトリの開発ルール** なので Git 管理を推奨する
+- ワークフロー実行ごとの成果物は、**原則として Git 管理しない**
+- 実行ごとの成果物は、**PR 作成時の判断材料・レビュー補助・一時的な開発ログ** として扱う
+- 長期的に残したい判断は、**PR本文 / Issue / 社内 Wiki / `docs/` などに要約して残す**
+- `.dev-agent-team/` 配下を **永続的なドキュメント置き場にしない**
+
+### 推奨ディレクトリ構成
+
+既存の Phase 別ディレクトリ方式と並行して、**Issue / Run 単位でまとめる方式を推奨** します。Run 単位なら、後から「この PR の判断材料」を追跡しやすく、削除・アーカイブの単位も明確になります。
+
+```
+.dev-agent-team/
+├── project-rules.md             ← Git 管理推奨
+├── runs/                        ← Issue / Run 単位
+│   └── issue-123/
+│       ├── project-context.md
+│       ├── requirements.md
+│       ├── investigation.md
+│       ├── impact.md
+│       ├── implementation-plan.md
+│       ├── test-plan.md
+│       ├── pr-review.md
+│       ├── pr-description.md
+│       └── release-checklist.md
+└── archive/                     ← 古い Run の保管先（任意）
+```
+
+Phase 別レイアウト（`requirements/` `reports/` `plans/` `reviews/` `releases/`）も引き続きサポートしますが、新規導入は Run 単位を推奨します。
+
+### Git 管理方針
+
+**Git 管理推奨**:
+
+- `.dev-agent-team/project-rules.md`
+
+**原則 Git 管理しない**:
+
+- `.dev-agent-team/project-context.md`
+- `.dev-agent-team/requirements/`
+- `.dev-agent-team/reports/`
+- `.dev-agent-team/plans/`
+- `.dev-agent-team/reviews/`
+- `.dev-agent-team/releases/`
+- `.dev-agent-team/runs/`
+- `.dev-agent-team/archive/`
+
+#### 推奨 `.gitignore` 例
+
+対象リポジトリのルート `.gitignore` に以下を追記してください。
+
+```gitignore
+# dev-agent-team artifacts (transient)
+.dev-agent-team/project-context.md
+.dev-agent-team/requirements/
+.dev-agent-team/reports/
+.dev-agent-team/plans/
+.dev-agent-team/reviews/
+.dev-agent-team/releases/
+.dev-agent-team/runs/
+.dev-agent-team/archive/
+
+# ただし project-rules.md は Git 管理から除外しない
+!.dev-agent-team/project-rules.md
+```
+
+`!` で始まる行で `project-rules.md` を **除外対象から外す** ことを忘れないでください。これがないと、せっかく作った Project Rules も Git 管理から外れてしまいます。
+
+### PR での扱い
+
+PR には、Artifacts 本体をすべてコミットするのではなく、以下を **要約して PR 本文に含める** 方針にしてください。
+
+- 要件整理の要約
+- 影響範囲（UI / API / DB / バッチ / 外部連携 / 権限 / テスト）
+- 採用した実装案
+- 採用しなかった案と理由
+- テスト観点
+- Human Decision Point（誰が何を判断したか）
+- リリース時の注意点（ロールバック手順 / 監視観点）
+
+PR 本文は [`templates/pr-description-template.md`](../templates/pr-description-template.md) を利用する想定です。Artifacts そのものはローカルに残しておけばよく、リモートに置くのは要約だけにします。
+
+### 削除・アーカイブ方針
+
+- **マージ後、不要な実行 Artifacts は削除してよい** — Run が完了し PR がマージされた段階で、`runs/{{issue-id}}/` を削除しても構いません
+- **後から参照したいものは `archive/` に移動してもよい** — ただし「後で見るかも」で何でも残すと結局散らかります。本当に参照価値があるものに絞る
+- **長期保存したい判断は archive ではなく PR / Issue / docs に要約して残す** — `archive/` は保険であり、メインの保存場所ではありません
+- **個人情報、機密情報、顧客情報、API キー、ログの生データなどを Artifacts に残さない** — Artifacts は Git 管理しなくてもローカル / バックアップ / IDE のクラウド同期から漏れる可能性があります
+- **誤って機密情報が含まれた場合は、Git 管理していなくても速やかに削除する** — Git 管理外でも、機密情報の生データを置きっぱなしにしない
+
+`/run-feature-workflow` は、Artifacts に機密情報が含まれる兆候を検知した場合、**自動的に停止して人間の判断を仰ぎます**（コマンド側のセーフガードで定義）。
+
+---
+
+## 10. まとめ
 
 導入の最短ルート:
 

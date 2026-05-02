@@ -81,6 +81,16 @@
 - 不明点は **推測で埋めず、確認事項** として出す
 - リファクタリングと機能追加を **同一コミットに混ぜない**
 
+### Artifacts Retention Rules
+
+成果物（Artifacts）は **一時的な開発ログ** として扱う。詳細は [`docs/adoption-guide.md` の Artifacts Retention Policy](../docs/adoption-guide.md#9-artifacts-retention-policy) を参照。実行時に守るルール:
+
+- **Artifacts are temporary by default** — 生成した Artifacts は原則 Git 管理しない（`project-rules.md` を除く）
+- **Do not commit generated artifacts unless the team explicitly decides to** — チームの明示的な合意がない限り、Artifacts をコミットしない
+- **Summarize important decisions into the PR description** — 採用案・不採用案・影響範囲・テスト観点・リリース注意点は、Artifacts そのものではなく **PR 本文に要約** して残す（`templates/pr-description-template.md` を使う）
+- **Avoid storing secrets, personal data, customer data, raw logs, or production data in artifacts** — APIキー / 個人情報 / 顧客データ / 本番ログの生データを Artifacts に書かない
+- **If artifacts include sensitive data, stop and ask for human confirmation before continuing** — 機密情報が含まれる兆候を検知したら、即座に停止して人間の判断を仰ぐ
+
 ## Phase Execution Format
 
 各 Phase の出力は以下の統一フォーマットで残す。後続 Phase が読み取りやすく、欠落も検出しやすくするため。
@@ -165,6 +175,36 @@ Phase 1 以降に進む前に、対象リポジトリのルール・技術スタ
 
 実行中に作成・更新する成果物。`workflows/feature-development.md` の各 Phase Output と1対1で対応する。
 
+> **Artifacts は原則として一時的な成果物** です。Git 管理は `project-rules.md` のみ推奨で、それ以外はチームの運用方針で扱います。詳細は [`docs/adoption-guide.md` の Artifacts Retention Policy](../docs/adoption-guide.md#9-artifacts-retention-policy) を参照。
+
+### ディレクトリレイアウト
+
+2方式をサポートする。新規導入なら **Run 単位レイアウトを推奨**。
+
+#### Run 単位レイアウト（推奨）
+
+Issue / Run 単位で1ディレクトリにまとまるため、後から追跡しやすく、削除・アーカイブ単位も明確になる。
+
+```
+.dev-agent-team/
+├── project-rules.md
+├── runs/
+│   └── {{issue-id}}/
+│       ├── project-context.md
+│       ├── requirements.md
+│       ├── investigation.md
+│       ├── impact.md
+│       ├── implementation-plan.md
+│       ├── implementation-log.md
+│       ├── test-plan.md
+│       ├── pr-review.md
+│       ├── pr-description.md
+│       └── release-checklist.md
+└── archive/
+```
+
+#### Phase 単位レイアウト（互換）
+
 | 成果物 | 生成 Phase | パス例 |
 |---|---|---|
 | Project Context | Phase 0 | `.dev-agent-team/project-context.md` |
@@ -178,7 +218,7 @@ Phase 1 以降に進む前に、対象リポジトリのルール・技術スタ
 | PR Description | Phase 7 | `.dev-agent-team/reviews/pr-description-{{issue-id}}.md` |
 | Release Checklist | Phase 8 | `.dev-agent-team/releases/release-checklist-{{issue-id}}.md` |
 
-`.dev-agent-team/` ディレクトリは案件ごとの作業ディレクトリ配下に作る想定。`{{issue-id}}` は Issue 番号 / チケット ID / 短いスラッグなど、識別可能なものを使う。
+`.dev-agent-team/` ディレクトリは案件ごとの作業ディレクトリ配下に作る想定。`{{issue-id}}` は Issue 番号 / チケット ID / 短いスラッグなど、識別可能なものを使う。どちらのレイアウトを採用するかは Phase 0 で対象リポジトリの既存運用に揃える。
 
 ## オプション
 
@@ -206,6 +246,7 @@ Phase 1 以降に進む前に、対象リポジトリのルール・技術スタ
 - 計画と実装の差分が説明不能なほど広がっている
 - テスト観点が完了条件と紐づいていない
 - ロールバック手順が「実行不可能」な状態（不可逆なマイグレーションなど）
+- **Artifacts に機密情報（APIキー / 個人情報 / 顧客データ / 本番ログの生データ等）が含まれる兆候を検知した**
 
 ## 注意
 

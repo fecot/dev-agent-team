@@ -36,10 +36,10 @@
 |---|---|---|---|
 | 0 | Project Context Loading | — | `templates/project-rules-template.md` |
 | 1 | Intake | `product-interpreter` | `commands/issue-to-plan.md` |
-| 2 | Discovery | `codebase-explorer` | `commands/codebase-explore.md` / `skills/codebase-reading.md` |
-| 3 | Impact Analysis | `architecture-reviewer` | `skills/impact-analysis.md` |
-| 4 | Implementation Planning | `implementation-driver` | `templates/implementation-plan-template.md` |
-| 5 | Safe Implementation | `implementation-driver` | `commands/safe-implement.md` / `skills/safe-refactoring.md` |
+| 2 | Discovery | `codebase-explorer` | `commands/codebase-explore.md` / `skills/codebase-reading.md` / レガシー時は `skills/legacy-modernization.md` |
+| 3 | Impact Analysis | `architecture-reviewer` | `skills/impact-analysis.md` / レガシー時は `skills/legacy-modernization.md` |
+| 4 | Implementation Planning | `implementation-driver` | `templates/implementation-plan-template.md` / レガシー時は `skills/legacy-modernization.md` |
+| 5 | Safe Implementation | `implementation-driver` | `commands/safe-implement.md` / `skills/safe-refactoring.md` / レガシー時は `skills/legacy-modernization.md` |
 | 6 | Test Design | `test-strategist` | `skills/test-design.md` |
 | 7 | Review Gate | `review-gatekeeper` | `commands/pr-review.md` / `templates/pr-description-template.md` |
 | 8 | Release Check | `release-captain` | — |
@@ -136,7 +136,7 @@
 
 - **使用 Command**: `commands/codebase-explore.md`
 - **主担当 Agent**: `agents/codebase-explorer.md`
-- **使用 Skill**: `skills/codebase-reading.md`
+- **使用 Skill**: `skills/codebase-reading.md` / 対象がレガシー MVC アプリの場合は `skills/legacy-modernization.md` を併用
 
 #### Input
 - Phase 1 の要件整理ドキュメント
@@ -167,7 +167,7 @@
 変更がシステム全体に与える影響を整理する。
 
 - **主担当 Agent**: `agents/architecture-reviewer.md`
-- **使用 Skill**: `skills/impact-analysis.md`
+- **使用 Skill**: `skills/impact-analysis.md` / レガシー改修なら `skills/legacy-modernization.md`（Controller / Model / View / Service の観点で影響を整理）
 
 #### Input
 - Phase 1 の要件整理
@@ -205,6 +205,7 @@
 
 - **使用 Template**: `templates/implementation-plan-template.md`
 - **主担当 Agent**: `agents/implementation-driver.md`
+- **使用 Skill**: レガシー改修なら `skills/legacy-modernization.md`（Minimal Change / Local Cleanup / Replacement-Ready Boundary の3案を必ず提示）
 
 #### Input
 - Phase 1〜3 の出力すべて
@@ -241,7 +242,7 @@
 
 - **使用 Command**: `commands/safe-implement.md`
 - **主担当 Agent**: `agents/implementation-driver.md`
-- **使用 Skill**: `skills/safe-refactoring.md`
+- **使用 Skill**: `skills/safe-refactoring.md` / レガシー改修なら `skills/legacy-modernization.md`（Core Policy・Generic MVC Legacy Guidance に従う）
 
 #### Input
 - Phase 4 の採用された実装計画

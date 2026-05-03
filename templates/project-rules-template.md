@@ -47,6 +47,25 @@
 - {{ドメイン境界・モジュール分割の原則}}
 - {{依存方向の制約（例: domain は infrastructure に依存しない）}}
 
+## Legacy Modernization Rules
+
+> このセクションは、対象アプリケーションが **レガシー MVC アプリケーション** や独自フレームワーク採用アプリケーションの場合のみ記入してください。新規アプリ・既に Clean Architecture 等で設計されたアプリでは「該当なし」と明記して構いません。
+>
+> 詳細な行動原則は [`skills/legacy-modernization.md`](../skills/legacy-modernization.md) を参照。
+
+- **対象アプリの構造**: {{MVC / 独自MVC / レイヤー混在 / Active Record パターン 等}}
+- **採用フレームワーク特性**: {{古いMVCFW / 独自FW / ORM / テンプレートエンジン 等}}
+- **リプレイス計画**: {{未定 / 検討中 / 段階的移行中 / 期日あり}}
+- **触ってはいけない領域**: {{凍結された旧モジュール / 自動生成コード / 廃止予定で残置されている領域}}
+- **業務ロジックの推奨配置**: {{Service 配下 / 専用クラス / Condition / DTO など}}
+- **新設計を持ち込む際の制約**:
+  - {{新しい設計用語の使用可否（例: DDD用語は避ける / ValueObject は OK 等）}}
+  - {{ディレクトリ追加の可否}}
+  - {{命名規則の制約}}
+- **Characterization Test の方針**: {{書ける範囲 / 書けない場合の代替（手動確認・スクリーンショット比較）}}
+- **Replacement Notes の保存先**: {{PR本文 / `.dev-agent-team/runs/{{issue-id}}/replacement-notes.md` / 社内Wiki}}
+- **3案提示ルール**: レガシー改修時は Minimal Change / Local Cleanup / Replacement-Ready Boundary の **3案を必ず提示** する（{{案C採用には人間承認が必要かどうか}}）
+
 ## Directory Rules
 
 ```

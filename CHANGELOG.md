@@ -17,7 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- _次のリリース予定の項目を追記してください_
+- **`commands/adopt-project.md` 本実装** — プレースホルダーを差し替え、`docs/adoption-guide.md` Step 2〜5 を対話的に半自動化する入口コマンドの本実装。状態診断（5ステップ）/ 分岐 A〜E（新規導入 / 既存連携 / CLAUDE.md 新規作成 / 冪等性モード / バージョン差分モード）/ 7問の必須アンケート + 推奨 + 該当時のみの3階層質問設計 / `--dry` オプション / 完了レポート / Stop Conditions
+- **`version.txt`** — リポジトリ直下に追加。`/adopt-project` の状態診断 [1] で読み込まれる dev-agent-team 本体のバージョン情報源。初期値: `v0.1.0`
+- **`templates/claude-md-snippet.md`** — 対象リポジトリの `CLAUDE.md` に追記する静的スニペット。`<!-- dev-agent-team:start -->` / `<!-- dev-agent-team:end -->` マーカーで区切られ、`/adopt-project` 再実行時にマーカー間を安全に置換できる構造
 
 ### Changed
 - _次のリリース予定の項目を追記してください_

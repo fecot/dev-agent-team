@@ -14,6 +14,50 @@ SaaS開発の現場で感じてきた課題があります。
 
 AIにただコードを書かせるのではなく、**要件整理・調査・設計・実装・テスト・PRレビューまでの流れを標準化し、誰が担当しても一定水準を踏める状態にすること**を目指しています。
 
+## インストール
+
+dev-agent-team はホーム配下に1回だけクローンし、入口コマンド `/adopt-project` をシンボリックリンクで `~/.claude/commands/` に配置します。これにより、**どのプロジェクトディレクトリからでも** `/adopt-project` を発火できます。
+
+> **対応環境**: macOS / Linux（WSL2 含む）。Windows ネイティブはサポート外です。
+
+```sh
+# 1. ホーム配下にクローン
+git clone https://github.com/fecot/dev-agent-team.git ~/.claude/dev-agent-team
+
+# 2. インストールスクリプト実行
+cd ~/.claude/dev-agent-team
+./install.sh
+```
+
+これで `~/.claude/commands/adopt-project.md` がシンボリックリンクとして配置され、Claude Code から `/adopt-project` が呼べるようになります。
+
+### 導入後の使い方
+
+```
+# 対象プロジェクトディレクトリで Claude Code を開く
+/adopt-project
+```
+
+`/adopt-project` は対象リポジトリ側に `.dev-agent-team/` を構築し、Project Rules の雛形を配置します。詳しい導入フローは [`docs/adoption-guide.md`](docs/adoption-guide.md) を参照してください。
+
+### 更新
+
+```sh
+cd ~/.claude/dev-agent-team && git pull
+```
+
+シンボリックリンク経由なので、`git pull` だけで最新版が反映されます。
+
+### アンインストール
+
+```sh
+cd ~/.claude/dev-agent-team
+./uninstall.sh
+
+# 任意: クローン本体を削除
+rm -rf ~/.claude/dev-agent-team
+```
+
 ## 構成
 
 ```
@@ -24,7 +68,9 @@ dev-agent-team/
 ├── templates/       # 成果物のテンプレート
 ├── workflows/       # 上記をつなげた標準開発フロー
 ├── examples/        # サンプルイシューと処理例
-└── docs/            # 導入ガイド・運用ドキュメント
+├── docs/            # 導入ガイド・運用ドキュメント
+├── install.sh       # 入口コマンド /adopt-project のインストール
+└── uninstall.sh     # 入口コマンドのアンインストール
 ```
 
 ## 対象リポジトリのルールを優先する

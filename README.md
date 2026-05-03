@@ -69,6 +69,7 @@ dev-agent-team/
 ├── workflows/       # 上記をつなげた標準開発フロー
 ├── examples/        # サンプルイシューと処理例
 ├── docs/            # 導入ガイド・運用ドキュメント
+├── CHANGELOG.md     # リリースごとの変更履歴 (Keep a Changelog 形式)
 ├── install.sh       # 入口コマンド /adopt-project のインストール
 └── uninstall.sh     # 入口コマンドのアンインストール
 ```

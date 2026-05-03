@@ -1,8 +1,24 @@
+---
+dev_agent_team_version: v0.1.0
+dev_agent_team_min_version: v0.1.0
+---
+
 # Project Rules: {{プロジェクト名}}
 
 このファイルは、対象開発リポジトリ側に置く **プロジェクト固有ルール** の雛形です。`dev-agent-team` の共通ワークフローを使うとき、Claude Code は **Phase 0: Project Context Loading** でこのファイルを読み込み、以降のフェーズはここに書かれたルールを **共通ワークフローより優先** して進めます。
 
 > **使い方**: このテンプレートを対象リポジトリのルートに `CLAUDE.md` として配置するか、`.dev-agent-team/project-rules.md` として置く。空欄のまま放置せず、不明な項目は「未確定（要確認）」と明記する。空欄は Phase 0 の Stop Condition に該当する。
+
+## dev-agent-team Version Pinning
+
+このファイル冒頭の YAML フロントマターは、対象プロジェクトの `project-rules.md` が **どのバージョンの dev-agent-team で動作することを想定しているか** を明示するためのものです。
+
+- **`dev_agent_team_version`**: このプロジェクトをセットアップした時点での dev-agent-team のバージョン。`/adopt-project` 実行時に書き込まれる想定
+- **`dev_agent_team_min_version`**: このプロジェクトが正しく動作するために最低限必要な dev-agent-team のバージョン。新しい Phase / Skill / Stop Condition に依存する内容を Project Rules に追記したら、このフィールドを上げる
+
+Phase 0（Project Context Loading）はこの値を読み、ホーム配下の `~/.claude/dev-agent-team` の現在バージョンと比較します。**現在バージョンが `dev_agent_team_min_version` を下回る場合は Stop Condition** を発動し、`cd ~/.claude/dev-agent-team && git pull` での更新を人間に促します（このバージョンチェック挙動の実装は `commands/adopt-project.md` および Phase 0 側の責務）。
+
+ホーム配下の dev-agent-team は **常に最新を追従** することを前提とし、プロジェクト側でバージョンを **ピン留めする** ことで「最新版で挙動が変わって急に Stop Condition が増えた」状態を避けつつ、過去バージョン依存の挙動も明示的に追跡できるようにしています。
 
 ---
 

@@ -486,9 +486,53 @@ Tech Stack: 現在の値:
 
 ### バージョン更新
 
-利用者が「上書き」または「バックアップ」を選んだ場合、`dev_agent_team_version` を `~/.claude/dev-agent-team/version.txt` の値に **自動更新**。`dev_agent_team_min_version` は **手動で利用者に確認** （新しい Phase / Skill / Stop Condition に依存していなければ据え置き、依存していれば上げる）。
+利用者が「そのまま追記」または「バックアップを取ってから追記」を選んだ場合、`dev_agent_team_version` を `~/.claude/dev-agent-team/version.txt` の値に **自動更新**。`dev_agent_team_min_version` は **手動で利用者に確認** （新しい Phase / Skill / Stop Condition に依存していなければ据え置き、依存していれば上げる）。
 
 `[v] バージョンピン留めのみ更新` を選んだ場合は、`dev_agent_team_version` のみ自動更新し、他の項目は触らない。
+
+### CLAUDE.md マーカーなし検出時（3選）
+
+分岐 D に入った時点で `.dev-agent-team/project-rules.md` は存在するが、`CLAUDE.md` 側には `<!-- dev-agent-team:start -->` マーカーが見つからない場合がある（手動で削除された / 別ツールで上書きされた等）。この場合、利用者に以下の3選を提示する:
+
+```
+.dev-agent-team/project-rules.md は存在しますが、
+CLAUDE.md に dev-agent-team の連携セクションマーカーが見つかりません。
+
+  [1] 何もしない（project-rules.md の更新だけ実行）
+  [2] CLAUDE.md にも連携セクションを追記（分岐 B 相当の処理を追加実行）
+  [3] 中止
+```
+
+- `[1]`: 通常の冪等性フロー（メニュー方式）に進む
+- `[2]`: 通常の冪等性フローを完了させた後、**分岐 B と同じ処理** を `CLAUDE.md` に対して実行する（末尾追記、diff 提示、§用語: 3選プロンプト の既存ファイル更新時に従う）
+- `[3]`: 即終了
+
+### 検出スタックと既存記述の不整合検出時（3選）
+
+冪等性モードで Tech Stack を更新する際、自動検出した技術スタックと既存 `CLAUDE.md` / `project-rules.md` の記述に **不整合** がある場合がある。例:
+
+- `package.json` の dependencies が React 18 + Next.js 14 を示すが、`CLAUDE.md` には Vue.js 3 と記述されている
+
+この場合、**LLM は勝手にどちらかを正としない**（dev-agent-team の根幹思想）。利用者に以下の警告と3選を提示する:
+
+```
+検出した技術スタックと既存 CLAUDE.md の記述に不整合が見つかりました:
+
+  - package.json: React 18, Next.js 14
+  - CLAUDE.md: Vue.js 3
+
+どちらを採用しますか？
+
+  [1] package.json を採用（検出値で project-rules.md を埋める）
+  [2] CLAUDE.md を採用（既存記述を尊重）
+  [3] 両方を確認して手動で入力
+```
+
+- `[1]`: 自動検出値で `project-rules.md` の Tech Stack を埋める
+- `[2]`: 既存 `CLAUDE.md` の記述から Tech Stack を抽出して採用（LLM は転記のみ、推測加筆しない）
+- `[3]`: 利用者がアンケート形式で手動入力
+
+これは判断委譲であり、LLM がどちらが正しいかを推論してはいけない。
 
 ---
 

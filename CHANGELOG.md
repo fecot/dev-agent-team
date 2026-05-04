@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **仕様書末尾の TODO セクション** — 後回し論点として「各分岐の `--dry` 出力例追加」を記録
 
 ### Changed
+- **`docs/troubleshooting.md` の記述を一般化** — 旧記述は特定ツール名（cmux 等）を原因として名指ししていたが、その後の検証で真因は別の入力経路（チャットアプリのペースト時マークダウン自動変換）と判明。将来のツール側修正にも耐えるよう、特定ツール名を含めない一般化記述に置き換え、コードブロックでの囲みによる回避策も追記
 - **アンケート段階1構造刷新** (A1) — 旧 7 問（Tech Stack に言語/DB/インフラ/CI/CD が混在、DB 質問が重複）を破棄し、責務を1つに絞った 8 問 + レガシー判定 1 問に刷新（目的 / 言語 / FW・主要ライブラリ / インフラ・CI/CD・パッケージマネージャ / Runtime Commands / DB / 必須テストレイヤー / PR ルール / Do Not）
 - **段階2/3 の境界整理** (A2) — 段階2 推奨を 8 項目（Architecture / Coding / Frontend / Backend / API / Security / Release / Known Risks）、段階3 該当時のみを 1 項目（Legacy Modernization Rules）に再構成。Known Risks は段階3から段階2へ移動
 - **Runtime Commands で「該当なし」回答許容** (F1) — 各サブ項目（test / lint / typecheck / dev / migrate）で `[Y/n/該当なし]` 回答を許容

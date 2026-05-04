@@ -68,7 +68,7 @@ dev-agent-team/
 ├── templates/       # 成果物のテンプレート
 ├── workflows/       # 上記をつなげた標準開発フロー
 ├── examples/        # サンプルイシューと処理例
-├── docs/            # 導入ガイド・運用ドキュメント
+├── docs/            # 導入ガイド・運用ドキュメント・トラブルシューティング
 ├── CHANGELOG.md     # リリースごとの変更履歴 (Keep a Changelog 形式)
 ├── version.txt      # dev-agent-team 本体のバージョン (/adopt-project が読む)
 ├── install.sh       # 入口コマンド /adopt-project のインストール

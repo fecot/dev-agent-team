@@ -46,11 +46,11 @@
 
 ### バージョン差分時（3選）
 
-分岐 E（バージョン不足）専用。詳細は §分岐 E を参照:
+分岐 E（バージョン不足）専用。**強制続行は提供しない**。詳細は §分岐 E を参照:
 
 ```
-[1] dev-agent-team を更新する手順を表示
-[2] project-rules.md の min_version を手動修正（救済策）
+[1] dev-agent-team を更新する手順を表示（コピペできる git pull コマンド）
+[2] project-rules.md の min_version を手動修正（救済策、利用者の手作業）
 [3] 中止
 ```
 
@@ -207,19 +207,20 @@ Read: .dev-agent-team/project-rules.md の YAML frontmatter
    → dev_agent_team_version, dev_agent_team_min_version
 ```
 
+#### バージョン比較ルール（SemVer 2.0 precedence）
+
+`dev_agent_team_version` と `dev_agent_team_min_version` の比較は **[SemVer 2.0](https://semver.org/) の precedence rule** に従う:
+
+- 例: `v0.1.0 < v0.2.0 < v0.10.0 < v1.0.0`（数値比較。文字列比較ではない）
+- プレリリース版（`v1.0.0-beta`）は **正式版（`v1.0.0`）より低い** 扱い
+- 不正フォーマット（`vX.Y.Z` 形式に従わない）の場合は **Stop Condition** で停止し、利用者に `project-rules.md` の修正を促す
+
+#### 判定結果
+
 - **現在 ≥ min_version**: 分岐D（冪等性モード）に進む
-- **現在 < min_version**: **分岐E（バージョン差分モード）** 発動
-  - メッセージ:
-    ```
-    現在の dev-agent-team: {{現在バージョン}}
-    project-rules.md が要求する最低バージョン: {{min_version}}
-
-    更新が必要です。以下を実行してください:
-      cd ~/.claude/dev-agent-team && git pull
-
-    更新後、再度 /adopt-project を実行してください。
-    ```
-  - 続行不可（Stop Condition）
+- **現在 < min_version**: **分岐E（バージョン差分モード）** 発動（後述 §分岐 E）
+- **不正フォーマット検出**: Stop Condition
+  - メッセージ: 「`.dev-agent-team/project-rules.md` の `dev_agent_team_min_version` が SemVer 形式（`vX.Y.Z`）に従っていません。修正してから再実行してください。」
 
 ### [5] 既存リポ判定（新規導入時のみ）
 
@@ -493,25 +494,56 @@ Tech Stack: 現在の値:
 
 ## 分岐 E: バージョン差分モード（再掲）
 
-ステップ [4] で発生。利用者に選ばせる:
+ステップ [4] で発生。**強制続行（bypass）は提供しない**。利用者に以下の3選を提示する:
 
 ```
 このプロジェクトは dev-agent-team {{min_version}} 以上を要求しますが、
 現在のホーム配下は {{現在バージョン}} です。
 
-  [1] dev-agent-team を更新する手順を表示（推奨）
-  [2] 強制的に進める（非推奨。Stop Condition を意図的にバイパス）
+  [1] dev-agent-team を更新する手順を表示（コピペできる git pull コマンド）
+  [2] project-rules.md の min_version を手動修正（救済策）
   [3] 中止
 ```
 
-- `[1]`: 以下を案内して終了
-  ```
+### `[1]` 更新手順を表示
+
+```
+以下を実行して dev-agent-team を最新化してください:
+
   cd ~/.claude/dev-agent-team
   git pull
-  # 更新後、再度 /adopt-project を実行してください
-  ```
-- `[2]`: **強い警告** を出した上で、Stop Condition を bypass フラグ付きで記録（後続の `/run-feature-workflow` が再評価できるよう project-context.md に残す）
-- `[3]`: 即終了
+
+更新後、再度 /adopt-project を実行してください。
+```
+
+実行後は終了（書き込みなし）。
+
+### `[2]` min_version の手動修正（救済策）
+
+以下のような状況で利用される救済策:
+
+- バージョンタグの付け間違い（例: 実際は v0.1.0 で動くのに `min_version: v0.2.0` と書かれている）
+- 環境制約で dev-agent-team を更新できない場合
+
+**重要: `/adopt-project` は `min_version` の値を書き換えない**。利用者が `.dev-agent-team/project-rules.md` を **手動で開いて編集** する。これは「判断は人間が行う」という dev-agent-team の根幹思想と整合する。
+
+```
+.dev-agent-team/project-rules.md の冒頭フロントマターを開いて、
+dev_agent_team_min_version の値を手動で修正してください:
+
+  ---
+  dev_agent_team_version: v{{現在バージョン}}
+  dev_agent_team_min_version: vX.Y.Z   ← この行を編集
+  ---
+
+修正後、再度 /adopt-project を実行してください。
+```
+
+実行後は終了（`/adopt-project` 自身は `project-rules.md` を書き換えない）。
+
+### `[3]` 中止
+
+即終了（書き込みなし）。
 
 ---
 
@@ -637,7 +669,7 @@ Tech Stack: 現在の値:
 - `~/.claude/dev-agent-team/version.txt` が読み取れない
 - 対象リポジトリが Git 管理外で、利用者が `git init` を拒否し、それでも .dev-agent-team/ 作成に異論がある
 - `.dev-agent-team/` が存在するが `project-rules.md` がなく、利用者が中断を選択
-- `dev_agent_team_min_version > 現在バージョン` で、利用者が更新せず強制続行を選ばない
+- `dev_agent_team_min_version > 現在バージョン` で、利用者が更新も `min_version` 手動修正も選ばず中止
 - `CLAUDE.md` のマーカーが片方しかない / 整合しない
 - 必須質問（段階1）の回答収集中に利用者が中断
 - 書き込み diff 提示で利用者が「中止」を選択（部分的な書き込みがあればロールバック手順を提示）
@@ -648,7 +680,7 @@ Tech Stack: 現在の値:
 - `git init` 実行可否
 - `.dev-agent-team/` 中途半端状態時の対処方針
 - 段階1の必須質問への回答（または明示的なスキップ）
-- バージョン差分時の対処（更新 / 強制続行 / 中止）
+- バージョン差分時の対処（更新手順表示 / `min_version` 手動修正 / 中止）
 - 段階2 / 段階3 の各項目を埋めるか、未確定で残すか
 
 ## 関連ドキュメント

@@ -151,7 +151,12 @@ src/
 
 ## Test Rules
 
-- 必須レイヤー: {{単体 / 結合 / E2E のうちどれが必須か}}
+主要項目（段階1で確認）:
+
+- **必須レイヤー**: {{単体 / 結合 / E2E のうちどれが必須か}}
+
+詳細項目（段階2で Test Rules を選んだ場合のみ追加質問）:
+
 - カバレッジ目標
 - モック方針: {{DBはモックしない / 外部APIは必ずモック等}}
 - テストファイルの配置（`__tests__/` / `*.test.ts` 等）
@@ -170,8 +175,13 @@ src/
 
 ## PR Rules
 
-- ブランチ命名: {{feature/* / fix/* / refactor/* ...}}
-- PR タイトル規約: {{Conventional Commits 形式 等}}
+主要項目（段階1で確認）:
+
+- **ブランチ命名**: {{feature/* / fix/* / refactor/* ...}}
+- **PR タイトル規約**: {{Conventional Commits 形式 等}}
+
+詳細項目（段階2で PR Rules を選んだ場合のみ追加質問）:
+
 - PR 説明テンプレート: {{`.github/pull_request_template.md` の所在}}
 - レビュアー指名ルール（CODEOWNERS の有無）
 - 必須レビュー数

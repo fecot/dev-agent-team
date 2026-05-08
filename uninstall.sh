@@ -22,8 +22,16 @@ set -euo pipefail
 # ---- 設定 ----
 DEV_AGENT_TEAM_ROOT="${DEV_AGENT_TEAM_ROOT:-${HOME}/.claude/dev-agent-team}"
 CLAUDE_COMMANDS_DIR="${CLAUDE_COMMANDS_DIR:-${HOME}/.claude/commands}"
-ENTRY_COMMAND="adopt-project.md"
-TARGET="${CLAUDE_COMMANDS_DIR}/${ENTRY_COMMAND}"
+
+# install.sh と対称: グローバル配置されたコマンドを削除する
+COMMANDS=(
+  "adopt-project.md"
+  "run-feature-workflow.md"
+  "issue-to-plan.md"
+  "codebase-explore.md"
+  "safe-implement.md"
+  "pr-review.md"
+)
 
 # ---- カラー出力 ----
 GREEN='\033[0;32m'
@@ -35,44 +43,57 @@ info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1" >&2; }
 
-# ---- 削除対象の確認 ----
+# ---- 削除処理 ----
 
-if [ ! -e "${TARGET}" ] && [ ! -L "${TARGET}" ]; then
-  warn "シンボリックリンクが存在しません: ${TARGET}"
-  info "アンインストールするものがありません。終了します。"
+REMOVED=0
+SKIPPED=0
+PROTECTED=0
+TOTAL=${#COMMANDS[@]}
+INDEX=0
+
+for cmd in "${COMMANDS[@]}"; do
+  INDEX=$((INDEX + 1))
+  TARGET="${CLAUDE_COMMANDS_DIR}/${cmd}"
+
+  if [ ! -e "${TARGET}" ] && [ ! -L "${TARGET}" ]; then
+    info "[${INDEX}/${TOTAL}] スキップ（存在しない）: ${TARGET}"
+    SKIPPED=$((SKIPPED + 1))
+    continue
+  fi
+
+  if [ -L "${TARGET}" ]; then
+    LINK_TARGET="$(readlink "${TARGET}")"
+    info "[${INDEX}/${TOTAL}] 削除: ${TARGET} -> ${LINK_TARGET}"
+    rm -f "${TARGET}"
+
+    if [ ! -e "${TARGET}" ] && [ ! -L "${TARGET}" ]; then
+      REMOVED=$((REMOVED + 1))
+    else
+      error "[${INDEX}/${TOTAL}] 削除に失敗: ${TARGET}"
+      exit 1
+    fi
+  elif [ -e "${TARGET}" ]; then
+    warn "[${INDEX}/${TOTAL}] 実ファイルを検出（dev-agent-team が作成したものではない可能性）: ${TARGET}"
+    warn "        削除する場合は手動で実行してください: rm ${TARGET}"
+    PROTECTED=$((PROTECTED + 1))
+  fi
+done
+
+echo ""
+info "結果: 削除 ${REMOVED} 件 / 不在 ${SKIPPED} 件 / 保護（実ファイル） ${PROTECTED} 件"
+
+if [ "${REMOVED}" -eq 0 ] && [ "${PROTECTED}" -eq 0 ]; then
+  info "アンインストールするものがありませんでした。"
   exit 0
-fi
-
-if [ -L "${TARGET}" ]; then
-  LINK_TARGET="$(readlink "${TARGET}")"
-  info "シンボリックリンクを削除します: ${TARGET} -> ${LINK_TARGET}"
-elif [ -e "${TARGET}" ]; then
-  warn "シンボリックリンクではなく実ファイルが存在します: ${TARGET}"
-  warn "dev-agent-team が作成したものではない可能性があります。"
-  warn "削除を続行する場合は手動で削除してください: rm ${TARGET}"
-  exit 1
-fi
-
-# ---- 削除 ----
-
-rm -f "${TARGET}"
-
-# ---- 検証 ----
-
-if [ ! -e "${TARGET}" ] && [ ! -L "${TARGET}" ]; then
-  info "削除しました: ${TARGET}"
-else
-  error "削除に失敗しました: ${TARGET}"
-  exit 1
 fi
 
 # ---- 完了 ----
 
 echo ""
-info "✅ dev-agent-team の入口コマンドをアンインストールしました。"
+info "✅ dev-agent-team のグローバルコマンドをアンインストールしました。"
 echo ""
 echo "クローン本体を削除する場合（任意）:"
 echo "  rm -rf ${DEV_AGENT_TEAM_ROOT}"
 echo ""
-echo "対象リポジトリの .dev-agent-team/ は手動で削除してください（必要なら）。"
+echo "各対象リポジトリの .dev-agent-team/ は手動で削除してください（必要なら）。"
 echo ""

@@ -18,6 +18,18 @@ set -euo pipefail
 # ---- 設定 ----
 DEV_AGENT_TEAM_ROOT="${DEV_AGENT_TEAM_ROOT:-${HOME}/.claude/dev-agent-team}"
 CLAUDE_COMMANDS_DIR="${CLAUDE_COMMANDS_DIR:-${HOME}/.claude/commands}"
+
+# グローバル配置するコマンド（dev-agent-team 本体に同梱）
+COMMANDS=(
+  "adopt-project.md"
+  "run-feature-workflow.md"
+  "issue-to-plan.md"
+  "codebase-explore.md"
+  "safe-implement.md"
+  "pr-review.md"
+)
+
+# pre-flight チェックの基準ファイル（クローン済みかの判定に使う）
 ENTRY_COMMAND="adopt-project.md"
 
 # ---- カラー出力 ----
@@ -56,38 +68,59 @@ fi
 
 # ---- インストール ----
 
-info "dev-agent-team の入口コマンドをインストールしています..."
+info "dev-agent-team のコマンドをインストールしています（${#COMMANDS[@]} 個）..."
 
 mkdir -p "${CLAUDE_COMMANDS_DIR}"
 
-TARGET="${CLAUDE_COMMANDS_DIR}/${ENTRY_COMMAND}"
-SOURCE="${DEV_AGENT_TEAM_ROOT}/commands/${ENTRY_COMMAND}"
+INSTALLED=0
+TOTAL=${#COMMANDS[@]}
+INDEX=0
 
-if [ -e "${TARGET}" ] || [ -L "${TARGET}" ]; then
-  warn "既存ファイルを検出: ${TARGET}"
-  warn "シンボリックリンクで上書きします: -> ${SOURCE}"
-fi
+for cmd in "${COMMANDS[@]}"; do
+  INDEX=$((INDEX + 1))
+  TARGET="${CLAUDE_COMMANDS_DIR}/${cmd}"
+  SOURCE="${DEV_AGENT_TEAM_ROOT}/commands/${cmd}"
 
-ln -sf "${SOURCE}" "${TARGET}"
+  # source の存在確認（リポジトリ内に該当ファイルがなければスキップして警告）
+  if [ ! -f "${SOURCE}" ]; then
+    warn "[${INDEX}/${TOTAL}] ソースファイルが見つかりません、スキップ: ${SOURCE}"
+    continue
+  fi
 
-# ---- 検証 ----
+  if [ -e "${TARGET}" ] || [ -L "${TARGET}" ]; then
+    warn "[${INDEX}/${TOTAL}] 既存ファイルを上書き: ${TARGET}"
+  fi
 
-if [ -L "${TARGET}" ]; then
-  info "シンボリックリンクを作成しました: ${TARGET} -> ${SOURCE}"
-else
-  error "シンボリックリンクの作成に失敗しました"
-  exit 1
-fi
+  ln -sf "${SOURCE}" "${TARGET}"
+
+  if [ -L "${TARGET}" ]; then
+    info "[${INDEX}/${TOTAL}] ${TARGET} -> ${SOURCE}"
+    INSTALLED=$((INSTALLED + 1))
+  else
+    error "[${INDEX}/${TOTAL}] シンボリックリンクの作成に失敗: ${TARGET}"
+    exit 1
+  fi
+done
+
+info "${INSTALLED}/${TOTAL} 個のコマンドをインストールしました。"
 
 # ---- 完了 ----
 
 echo ""
 info "✅ dev-agent-team のインストールが完了しました。"
 echo ""
+echo "利用可能になったコマンド:"
+echo "  /adopt-project          — 対象プロジェクトに dev-agent-team を導入"
+echo "  /run-feature-workflow   — 8 Phase の標準開発フロー（入口）"
+echo "  /issue-to-plan          — Issue を実装計画に変換"
+echo "  /codebase-explore       — 既存コード調査"
+echo "  /safe-implement         — 計画書ベースの安全な実装"
+echo "  /pr-review              — PR 前レビュー"
+echo ""
 echo "次の手順:"
 echo "  1. 対象プロジェクトのディレクトリで Claude Code を開く"
-echo "  2. /adopt-project を実行する"
-echo "  3. プロンプトに従って dev-agent-team をプロジェクトにセットアップする"
+echo "  2. /adopt-project を実行してプロジェクトをセットアップ"
+echo "  3. その後 /run-feature-workflow などで開発タスクを進める"
 echo ""
 echo "あとで dev-agent-team を更新する場合:"
 echo "  cd ${DEV_AGENT_TEAM_ROOT} && git pull"

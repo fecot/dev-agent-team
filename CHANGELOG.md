@@ -49,6 +49,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - **分岐 E の強制続行（bypass）オプション** (D2) — 旧 3 選 `[2]` の「強制的に進める（非推奨）」を完全削除。代替として「`min_version` 手動修正（救済策、利用者の手作業）」を提供。`/adopt-project` は `min_version` を書き換えず、利用者が `.dev-agent-team/project-rules.md` を手動で開いて編集する。bypass 関連の記述は仕様書から完全削除
 
+### Fixed
+- **`install.sh` / `uninstall.sh` を全コマンド対応に拡張** — v0.1.0 時点では `adopt-project.md` のみグローバル symlink していたため、`/run-feature-workflow` などのコマンドがどこからも呼べない不具合があった（仕様意図と実装のギャップ）。`install.sh` と `uninstall.sh` で `COMMANDS` 配列を導入し、`adopt-project.md` / `run-feature-workflow.md` / `issue-to-plan.md` / `codebase-explore.md` / `safe-implement.md` / `pr-review.md` の 6 コマンドすべてを `~/.claude/commands/` に symlink するように。これにより `install.sh` 1 回で全コマンドが任意プロジェクトでグローバルに使え、`/adopt-project` の責務はプロジェクト固有 artifact（`.dev-agent-team/project-rules.md` 等）の整備に集中する設計が実装と整合
+- 実機反映には利用者側で `cd ~/.claude/dev-agent-team && git pull && ./install.sh` の実行が必要
+
 ---
 
 ## [v0.1.0] - 2026-05-04

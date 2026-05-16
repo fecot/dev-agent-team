@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **`templates/issue-template.md`** 新規追加 (PRA-11459 振り返り由来) — 依頼者しか知らない情報を確実に渡すための Phase 1 Intake テンプレート。必須（背景・目的 / スコープ / 受け入れ基準）/ 該当時のみ必須（UI 変更 / 共通部品挙動 / 既知の罠）/ 任意（制約 / 関連情報）の 3 階層構造。「コードを読めば分かる情報は省略 OK、依頼者の頭の中にしかない情報に集中」という方針を冒頭で明示。`commands/run-feature-workflow.md` Inputs / `workflows/feature-development.md` Phase 1 Action / `agents/product-interpreter.md` の行動原則 + Stop Condition から参照される
 - **Migration / UI Replica サブフロー** (PRA-11459 フィードバック由来) — `workflows/feature-development.md` § 6 にタスク種別サブフローを新設。通常 / Migration / UI Replica / Hotfix の 4 種別を定義し、Migration / UI Replica 種別では Phase 0 / 1 / 2 / 4 / 5 に追加チェックリスト（グローバル SCSS 所在 / source 実値計測 / ゴール定義承認 / 検証ループ）が発火する。タスク種別は人間が宣言し、自動判定はしない
 - **`agents/product-interpreter.md` の数値化プロトコル** (PRA-11459 フィードバック由来) — UI / 見た目に関する曖昧な指示（「太い」「細い」「濃い」等）を、推測で実装せず計測した上で逆質問するプロトコルを追加。形容詞ホワイトリスト + 逆質問テンプレ + 範囲指示の条件確認ルール
 - **`agents/implementation-driver.md` のゴール定義 / 数値固定方針** (PRA-11459 フィードバック由来) — Migration / UI Replica 種別の実装計画に「ゴール定義（完全 px 一致 / UX 同等 / 大幅改修）」と「数値固定方針（色 / フォント / レイアウト ratio）」セクションを必須化。Phase 5 開始前に CEO/PM 承認を得る運用に

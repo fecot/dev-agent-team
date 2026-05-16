@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Migration / UI Replica サブフロー** (PRA-11459 フィードバック由来) — `workflows/feature-development.md` § 6 にタスク種別サブフローを新設。通常 / Migration / UI Replica / Hotfix の 4 種別を定義し、Migration / UI Replica 種別では Phase 0 / 1 / 2 / 4 / 5 に追加チェックリスト（グローバル SCSS 所在 / source 実値計測 / ゴール定義承認 / 検証ループ）が発火する。タスク種別は人間が宣言し、自動判定はしない
+- **`agents/product-interpreter.md` の数値化プロトコル** (PRA-11459 フィードバック由来) — UI / 見た目に関する曖昧な指示（「太い」「細い」「濃い」等）を、推測で実装せず計測した上で逆質問するプロトコルを追加。形容詞ホワイトリスト + 逆質問テンプレ + 範囲指示の条件確認ルール
+- **`agents/implementation-driver.md` のゴール定義 / 数値固定方針** (PRA-11459 フィードバック由来) — Migration / UI Replica 種別の実装計画に「ゴール定義（完全 px 一致 / UX 同等 / 大幅改修）」と「数値固定方針（色 / フォント / レイアウト ratio）」セクションを必須化。Phase 5 開始前に CEO/PM 承認を得る運用に
+- **`skills/migration-spec-capture.md`** 新規追加 (PRA-11459 フィードバック由来) — 移植元（source）アプリの実値（color / px / DOM / LocalStorage 実値 / API 実 shape / 共通部品の動的挙動）を Playwright MCP で機械計測する skill。Phase 2 の Discovery で source を計測し、Phase 4 の数値固定方針と Phase 5 の検証ベースラインとして使う
+- **`skills/browser-verification.md`** 新規追加 (PRA-11459 フィードバック由来) — UI 変更時の検証ループ 6 ステップ（修正 → rebuild 確認 → cacheBust reload → 実機計測 → スクショ比較 → 数値+画像で報告）を標準形として定義。目視判定ではなく `getComputedStyle` / `getBoundingClientRect` の計測値を一次ソースにする
+- **`commands/safe-implement.md` の検証ループ統合** (PRA-11459 フィードバック由来) — 「検証ループ（UI 変更時）」セクションを追加し、Migration / UI Replica 種別では必須、それ以外の UI 変更タスクでも強く推奨。セーフガードに「目視で完了扱いにしない」「UI 変更で検証ループ未通過のまま完了報告しない」を追加
 - **`commands/adopt-project.md` 本実装** — プレースホルダーを差し替え、`docs/adoption-guide.md` Step 2〜5 を対話的に半自動化する入口コマンドの本実装。状態診断（5ステップ）/ 分岐 A〜E（新規導入 / 既存連携 / CLAUDE.md 新規作成 / 冪等性モード / バージョン差分モード）/ アンケート 3 階層設計 / `--dry` オプション / 完了レポート / Stop Conditions
 - **`version.txt`** — リポジトリ直下に追加。`/adopt-project` の状態診断 [1] で読み込まれる dev-agent-team 本体のバージョン情報源。初期値: `v0.1.0`
 - **`templates/claude-md-snippet.md`** — 対象リポジトリの `CLAUDE.md` に追記する静的スニペット。`<!-- dev-agent-team:start -->` / `<!-- dev-agent-team:end -->` マーカーで区切られ、`/adopt-project` 再実行時にマーカー間を安全に置換できる構造
@@ -35,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **仕様書末尾の TODO セクション** — 後回し論点として「各分岐の `--dry` 出力例追加」を記録
 
 ### Changed
+- **`commands/run-feature-workflow.md` の Inputs に「タスク種別」フィールド追加** (PRA-11459 フィードバック由来) — 通常 / Migration / UI Replica / Hotfix のいずれかを起動時に人間が宣言する仕様。自動判定はしない（誤判定で誤サブフローが走るリスク回避）。When Not to Use の Hotfix 記述を新サブフローと整合させた
+- **README.md の Skills 一覧表に 2 行追加** — `migration-spec-capture` と `browser-verification` を一覧に追記
 - **`docs/troubleshooting.md` の記述を一般化** — 旧記述は特定ツール名（cmux 等）を原因として名指ししていたが、その後の検証で真因は別の入力経路（チャットアプリのペースト時マークダウン自動変換）と判明。将来のツール側修正にも耐えるよう、特定ツール名を含めない一般化記述に置き換え、コードブロックでの囲みによる回避策も追記
 - **アンケート段階1構造刷新** (A1) — 旧 7 問（Tech Stack に言語/DB/インフラ/CI/CD が混在、DB 質問が重複）を破棄し、責務を1つに絞った 8 問 + レガシー判定 1 問に刷新（目的 / 言語 / FW・主要ライブラリ / インフラ・CI/CD・パッケージマネージャ / Runtime Commands / DB / 必須テストレイヤー / PR ルール / Do Not）
 - **段階2/3 の境界整理** (A2) — 段階2 推奨を 8 項目（Architecture / Coding / Frontend / Backend / API / Security / Release / Known Risks）、段階3 該当時のみを 1 項目（Legacy Modernization Rules）に再構成。Known Risks は段階3から段階2へ移動

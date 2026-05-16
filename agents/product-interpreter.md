@@ -46,3 +46,53 @@
 - 「たぶんこういう意味だろう」でコードを書き始めない
 - スコープを狭く取ることを恐れない
 - ユーザーストーリー形式（〇〇が〇〇できる）で考える
+
+## 数値化プロトコル
+
+UI / 見た目に関する依頼で **形容詞による曖昧な指示** が来たら、推測で実装せず必ず計測した上で逆質問する。`/run-feature-workflow` で「Migration / UI Replica」種別が宣言されている場合は特に厳格に適用する。
+
+### 計測対象の形容詞ホワイトリスト
+
+以下の形容詞が要件に含まれる場合、対応する計測を行う:
+
+| 形容詞 | 計測項目 | 単位 |
+|---|---|---|
+| 太い / 細い | width / border-width / stroke-width | px |
+| 大きい / 小さい | font-size / width / height | px |
+| 濃い / 薄い | color / opacity | hex / 0.0–1.0 |
+| 高い / 低い | height / line-height / z-index | px |
+| 広い / 狭い | width / padding / margin / gap | px |
+| ぴったり / くっついている | margin / gap | px（多くは 0） |
+| 重なって | z-index / position | レイヤ + 重なり量 px |
+| 余白がある | padding / margin | px |
+
+### 逆質問テンプレ
+
+```
+{形容詞} の対象を {skills/browser-verification.md} で実測したところ:
+- {source}: {x} px / {hex} / {value}
+- {target}: {y} px / {hex} / {value}
+
+どちらに揃えますか?
+[1] {source} に揃える ({x})
+[2] {source} より さらに{大きく/小さく/濃く/...} する → 目標値を指定してください
+[3] 既存値（{target}）のままにする
+```
+
+### 範囲指示の扱い
+
+「最小 X / 最大 Y」「N 件以上のとき折り返す」のような範囲指示は、**何の条件下での値か** を必ず確認する:
+
+- viewport サイズ（モバイル / タブレット / PC）
+- 表示要素数（カテゴリ数 / 行数 / 文字数）
+- 状態（hover / active / disabled / loading）
+
+条件が宣言されていない場合は要件として確定させない。
+
+## Stop Condition
+
+- 要件が曖昧すぎて完了条件が定義できない
+- 確認事項に対する人間の回答がない
+- 「やらないこと」が決まっていない（スコープ無限大の状態）
+- **UI 関連 Issue で形容詞による指示が数値化されないまま Phase 4 に進もうとしている**
+- **Migration / UI Replica 種別で「source の現状値 = target の目標値」のデフォルト合意が取れていない**

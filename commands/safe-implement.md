@@ -19,6 +19,21 @@
 5. TestStrategist としてテスト観点を出力
 6. テストコードを生成
 
+## 検証ループ（UI 変更時）
+
+UI に影響する実装では、**1 修正ごとに** `skills/browser-verification.md` の 6 ステップ検証ループを通す:
+
+1. コード修正
+2. ビルド完了確認（bundle mtime / dev server ログ）
+3. キャッシュバイパス reload（Playwright route interception）
+4. 当該要素を `browser_evaluate` で実機計測
+5. スクショ取得 + source 版と side-by-side
+6. **数値 + 画像で報告**（目視判定で完了扱いにしない）
+
+`/run-feature-workflow` で **Migration / UI Replica 種別** を宣言している場合は必須。それ以外の UI 変更タスクでも強く推奨。前提として Playwright MCP が利用可能であること。
+
+詳細は [`skills/browser-verification.md`](../skills/browser-verification.md) を参照。
+
 ## 原則
 
 - 計画にないことをやらない
@@ -32,6 +47,7 @@
 - テストコード
 - セルフレビュー結果
 - `/pr-review` への入力となるサマリ
+- （UI 変更時）`skills/browser-verification.md` の検証ログ
 
 ## セーフガード
 
@@ -41,3 +57,5 @@
 - 影響範囲が計画より広がった場合
 - 既存の設計パターンと矛盾する場合
 - テストが書けない実装になりそうな場合
+- **UI を変更したのに `skills/browser-verification.md` の検証ループを通していない状態で完了報告しようとした場合**
+- **計測値で source / target の差分が残っているのに「目視では同じに見える」で完了扱いにしようとした場合**

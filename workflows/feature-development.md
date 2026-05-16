@@ -478,3 +478,68 @@ ReleaseCaptain が:
 6. 計画外の事項が見つかったら、いったん停止して計画を更新する
 
 > このワークフローは「速さ」より「抜け漏れのなさ」を優先するための型です。慣れれば各 Phase の判断は数分で済みます。
+
+---
+
+## 6. タスク種別サブフロー
+
+`/run-feature-workflow` 起動時に、**人間が** タスク種別を以下から宣言する。種別により、Phase 0 / 1 / 2 / 5 に **追加項目** が発火する。種別を宣言しない場合は「通常」扱い。
+
+| 種別 | 判定基準 | 追加サブフロー |
+|---|---|---|
+| 通常 | 下記いずれにも該当しない新機能・改修 | なし（§2 の標準 Phase のみ） |
+| Migration | 既存コードを別 FW / 別言語に移植する（例: AngularJS → React, Rails → Go） | 6.1 を発火 |
+| UI Replica | 既存 UI（別アプリ / Figma / 旧画面）を別技術スタックで再現する | 6.1 を発火（Migration と同じ） |
+| Hotfix | 本番不具合の最小修正。Phase 1〜4 を圧縮して Phase 5 へ最短到達 | 6.2 を発火 |
+
+> 種別の **自動判定は行わない**（誤判定で誤サブフローが走るリスクを避けるため）。`/run-feature-workflow` の Inputs で必ず明示する。
+
+### 6.1 Migration / UI Replica サブフロー
+
+「source（既存）= ground truth、target（新）= 再現対象」という構図で、**実値を実測してから実装する** ことを徹底する。前提: **Playwright MCP（または同等のブラウザ自動操作 MCP）が利用可能** であること。利用不可環境では本サブフローは適用外とする。
+
+#### Phase 0 追加項目
+
+- グローバル SCSS / Tailwind / リセット CSS の **所在を把握** し、`project-context.md` に記録
+- ブラウザキャッシュ対策標準（hard reload / Playwright route interception）を確認し、`project-context.md` に記録
+- SCSS / CSS の **構文制約**（例: `//` コメント不可、ネスト深さ制限）を `project-rules.md` に追記
+- webpack / vite / その他バンドラの **rebuild 完了確認方法**（出力 bundle の mtime / dev server の出力ログ）を `project-context.md` に記録
+
+#### Phase 1 追加項目
+
+- **ゴール定義** を要件成果物に明記（完全再現 / 部分改善 / 大幅改修 のいずれか）
+- 「**source の現状値 = target の目標値**」が暗黙のデフォルトであることを明文化（特に色 / フォント / px サイズ）
+- 受け入れ基準を「source スクショ vs target スクショ」とする旨を完了条件に追加
+- 形容詞による曖昧な指示が含まれていれば `agents/product-interpreter.md` の **数値化プロトコル** に従って数値化する
+
+#### Phase 2 追加チェックリスト
+
+`skills/migration-spec-capture.md` を使って source 側を機械計測し、以下を Discovery レポートに含める:
+
+- [ ] source テンプレ HTML を **全文確認**（部分抜粋ではなく）
+- [ ] source controller / view-model の state / event を Discovery
+- [ ] source 専用 SCSS / CSS から色 / padding / font-size / margin / border を **px / hex 単位で抽出**
+- [ ] 上記クラスを **上書きしているグローバル SCSS** の有無を `grep` で確認
+- [ ] LocalStorage 全エントリの **実値ダンプ**（型乖離 / 空文字 / null パターンを検出）
+- [ ] API レスポンスの **実 shape ダンプ**（TypeScript 型宣言ファイルとのズレを検出）
+- [ ] 使用ライブラリの **差分マッピング表**（例: c3 → chart.js の設定対応表）
+- [ ] 共通部品の **動的データ更新挙動**（useState 初期値固定 / props 変更時の再レンダリング有無）
+
+#### Phase 4 追加項目
+
+- `agents/implementation-driver.md` の **ゴール定義 / 数値固定方針** セクションを必ず埋め、Phase 5 開始前に CEO/PM 承認を得る
+
+#### Phase 5 追加要件
+
+- `skills/browser-verification.md` の **検証ループ（6 ステップ）** を **1 修正ごとに必ず通す**
+- 「実装したけど反映されない」「色が違う」のフィードバックは目視ではなく `browser_evaluate` での実測値で報告する
+
+#### Stop Condition 追加
+
+- source の実値（色 / px / DOM 構造）が未計測のまま Phase 4 に進もうとしている
+- ゴール定義（完全 px 一致 / UX 同等 / 大幅改修）が未承認のまま Phase 5 に進もうとしている
+- Phase 5 で UI 変更を行ったのに `skills/browser-verification.md` の検証ループを通していない
+
+### 6.2 Hotfix サブフロー
+
+Phase 1〜4 を **圧縮**（要件は既知 / 影響範囲は限定 / 計画案は最小 1 案）して Phase 5 に最短到達する代わりに、Phase 7 / 8 は **通常以上に厳格** にする（ロールバック手順 / 監視観点を必ず明記、レビュー観点を省略しない）。詳細は別途運用知見が溜まり次第追記。

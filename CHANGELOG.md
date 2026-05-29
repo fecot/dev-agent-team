@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **視覚仕様レビューゲート（Phase 4 → 5）** (マイグレーション振り返りフィードバック由来、一般化して追加) — UI（画面・コンポーネント・レイアウト・見た目）を伴う変更では、Phase 4 で視覚仕様スケッチ（ASCII ワイヤーフレーム / mock / 注釈付きスクショ等）を作り、Phase 5 開始前に人間が合意するゲートを新設。「実装してから『思っていたのと違う』」の手戻りを防ぐ。`workflows/feature-development.md` の Phase 4 Action/Output/Stop Condition + Human Decision Points、`agents/implementation-driver.md` の出力テンプレ/セルフチェック/行動原則、`commands/run-feature-workflow.md` Execution Rules、`commands/safe-implement.md` 実行フロー/セーフガードに反映。Migration に限らず UI 変更全般に適用
+- **振り返りによる Known Risks 蓄積運用（Phase 8）** (マイグレーション振り返りフィードバック由来、一般化して追加) — Phase 8（Release Check）に振り返りステップを追加。「次回また踏みそうな罠」を 1 行ずつ抽出し、対象リポジトリの Project Rules の Known Risks への追記を人間に提案する（同じ罠を毎回踏むのを止める蓄積運用）。`workflows/feature-development.md` Phase 8 Action/Output + Human Decision Points、`agents/release-captain.md` 責務/出力/行動原則、`templates/project-rules-template.md` の Known Risks セクションに反映。追記は提案であり Project Rules の書き換え可否は人間が判断する
+- **受け入れ基準の明示承認を Stop Condition 化（Phase 1）** (マイグレーション振り返りフィードバック由来、一般化して追加) — 受入基準を列挙しただけでは Phase 2 に進まず、人間が「これで進めてよい」と明示承認するまで停止する Stop Condition を追加（「確認事項がない」＝「承認済み」ではない）。認識ズレを早い段階で炙り出す。`workflows/feature-development.md` Phase 1 + `agents/product-interpreter.md` Stop Condition に反映
+- **タスク粒度の指針** (マイグレーション振り返りフィードバック由来、一般化して追加) — タスク追跡（TaskCreate 等）の粒度は Phase 単位までとし、Phase 内の細かい実装ステップは計画書/実装ログで管理する方針を明文化（sub-task の作りすぎを防ぐ）。`workflows/feature-development.md` 設計の前提 + `commands/run-feature-workflow.md` Execution Rules に反映
 - **`templates/issue-template.md`** 新規追加 (PRA-11459 振り返り由来) — 依頼者しか知らない情報を確実に渡すための Phase 1 Intake テンプレート。必須（背景・目的 / スコープ / 受け入れ基準）/ 該当時のみ必須（UI 変更 / 共通部品挙動 / 既知の罠）/ 任意（制約 / 関連情報）の 3 階層構造。「コードを読めば分かる情報は省略 OK、依頼者の頭の中にしかない情報に集中」という方針を冒頭で明示。`commands/run-feature-workflow.md` Inputs / `workflows/feature-development.md` Phase 1 Action / `agents/product-interpreter.md` の行動原則 + Stop Condition から参照される
 - **Migration / UI Replica サブフロー** (PRA-11459 フィードバック由来) — `workflows/feature-development.md` § 6 にタスク種別サブフローを新設。通常 / Migration / UI Replica / Hotfix の 4 種別を定義し、Migration / UI Replica 種別では Phase 0 / 1 / 2 / 4 / 5 に追加チェックリスト（グローバル SCSS 所在 / source 実値計測 / ゴール定義承認 / 検証ループ）が発火する。タスク種別は人間が宣言し、自動判定はしない
 - **`agents/product-interpreter.md` の数値化プロトコル** (PRA-11459 フィードバック由来) — UI / 見た目に関する曖昧な指示（「太い」「細い」「濃い」等）を、推測で実装せず計測した上で逆質問するプロトコルを追加。形容詞ホワイトリスト + 逆質問テンプレ + 範囲指示の条件確認ルール
@@ -42,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **仕様書末尾の TODO セクション** — 後回し論点として「各分岐の `--dry` 出力例追加」を記録
 
 ### Changed
+- **Migration サブフロー Phase 2 に「全画面スクショ + 可視要素インベントリ」を必須化** (マイグレーション振り返りフィードバック由来) — `skills/migration-spec-capture.md` の採取項目に「0. 全画面スクリーンショット + 可視要素インベントリ」を追加し、`workflows/feature-development.md` § 6.1 Phase 2 チェックリストにも反映。コード/要件から拾った要素だけ計測すると「画面に存在するのに認識していない要素」を丸ごと見落とすため、実機の見た目から要素を棚卸しする。あわせて「ロジックと CSS（専用スタイルシートの所在）を両方 Discovery する（CSS を後回しにしない）」を明記。Stop Condition も追加
+- **`skills/browser-verification.md` のキャッシュバイパスを `no-store` に強化** (マイグレーション振り返りフィードバック由来) — Step 3 / `cacheBustReload` の注入ヘッダを `Cache-Control: no-cache` から `no-store` に変更（レスポンスのキャッシュ保存自体を抑止し、古い bundle を掴む事故を防ぐ）。「反映されない体感の多くはキャッシュ起因。目視で悩む前に定型手順として通す」旨を追記
 - **`commands/run-feature-workflow.md` の Inputs に「タスク種別」フィールド追加** (PRA-11459 フィードバック由来) — 通常 / Migration / UI Replica / Hotfix のいずれかを起動時に人間が宣言する仕様。自動判定はしない（誤判定で誤サブフローが走るリスク回避）。When Not to Use の Hotfix 記述を新サブフローと整合させた
 - **README.md の Skills 一覧表に 2 行追加** — `migration-spec-capture` と `browser-verification` を一覧に追記
 - **`docs/troubleshooting.md` の記述を一般化** — 旧記述は特定ツール名（cmux 等）を原因として名指ししていたが、その後の検証で真因は別の入力経路（チャットアプリのペースト時マークダウン自動変換）と判明。将来のツール側修正にも耐えるよう、特定ツール名を含めない一般化記述に置き換え、コードブロックでの囲みによる回避策も追記

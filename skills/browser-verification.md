@@ -52,8 +52,9 @@ UI 変更を加えるたびに、以下の 6 ステップを **必ず順番に**
 
 ### Step 3: キャッシュバイパス reload
 
-- Playwright route interception で `Cache-Control: no-cache` / `Pragma: no-cache` を注入してから navigate
+- Playwright route interception で `Cache-Control: no-store` / `Pragma: no-cache` を注入してから navigate（`no-store` は `no-cache` より強く、レスポンスのキャッシュ保存自体を抑止する。再検証で済まされて古い bundle を掴む事故を防ぐ）
 - ブラウザのディスクキャッシュ / サービスワーカーのキャッシュ / CDN キャッシュをすべてバイパスする想定
+- 「コードを直したのに反映されない」の体感の多くはキャッシュ起因。目視で悩む前にこのステップを定型手順として通す
 - 擬似インターフェース: `cacheBustReload(url)` — route で Cache-Control 注入 + `page.goto(url, { waitUntil: 'networkidle' })`
 
 ### Step 4: 当該要素の実機計測
@@ -93,7 +94,7 @@ UI 変更を加えるたびに、以下の 6 ステップを **必ず順番に**
 
 | 名前 | 機能 | 内部実装イメージ |
 |---|---|---|
-| `cacheBustReload(url)` | キャッシュバイパスで再読込 | `route('**/*', r => r.continue({ headers: { ...r.request().headers(), 'Cache-Control': 'no-cache' } }))` + `goto(url)` |
+| `cacheBustReload(url)` | キャッシュバイパスで再読込 | `route('**/*', r => r.continue({ headers: { ...r.request().headers(), 'Cache-Control': 'no-store' } }))` + `goto(url)` |
 | `measureElementPx(selector, props)` | 要素の computed style + bbox を返す | `page.evaluate((s, p) => { const el = document.querySelector(s); const cs = getComputedStyle(el); return { ...Object.fromEntries(p.map(k => [k, cs[k]])), bbox: el.getBoundingClientRect() }; }, selector, props)` |
 | `screenshotPair(sourceUrl, targetUrl, selector)` | 同要素を 2 URL で並べる | 2 ブラウザコンテキストで開き、両方の `screenshot({ clip: bbox })` を取得 → Pillow / sharp で横並びに合成 |
 | `waitForRebuild(bundlePath)` | bundle の mtime 更新を待つ | `until` ループで `stat` 比較。タイムアウト 30s |

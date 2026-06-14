@@ -89,6 +89,10 @@
 - リファクタリングと機能追加を **同一コミットに混ぜない**
 - **タスク管理（TaskCreate 等）の粒度は Phase 単位まで**。Phase 内の細かい実装ステップは個別タスク化せず、計画書（Phase 4）と実装ログ（Phase 5）で管理する（sub-task の作りすぎを避ける）
 - **UI を伴う変更では、Phase 4 で視覚仕様スケッチ（ASCII / mock 等）を作り、人間の合意を得てから Phase 5 に進む**（視覚仕様レビューゲート。合意なしに実装着手しない）
+- **ネイティブ実行エンジン（`/goal` / Dynamic Workflows）の併用は任意**。使う場合は人間ゲートを越えさせない:
+  - `/goal` は **機械的サブループ限定**（テスト緑化 / lint / typecheck など Phase 5・6 の検証可能な区間のみ）。終了条件に「かつ 未解決の Human Decision Point がない」を必ず含める
+  - Dynamic Workflow は **単一フェーズ内の人間ゲートを含まない fan-out 限定**（Phase 2 調査 / Phase 7 レビュー / Migration 計測）。8 Phase 全体を 1 本の無人ワークフローにしない
+  - 詳細は [`docs/native-tooling-integration.md`](../docs/native-tooling-integration.md)
 
 ### Artifacts Retention Rules
 

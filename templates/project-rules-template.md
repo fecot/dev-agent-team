@@ -197,6 +197,14 @@ src/
 - ロールバック手順と判断基準
 - ポストモーテムの運用
 
+## Execution Engine 方針
+
+> Claude Code ネイティブの `/goal` / Dynamic Workflows をこのプロジェクトで使うかの方針。詳細は dev-agent-team の [`docs/native-tooling-integration.md`](../docs/native-tooling-integration.md) を参照。未使用なら「該当なし」と明記してよい。
+
+- **`/goal` の使用**: {{許可 / 禁止 / 機械的サブループ限定（テスト緑化・lint・typecheck のみ） / 該当なし}}
+- **Dynamic Workflows の使用**: {{許可 / 禁止 / 単一フェーズ内 fan-out 限定 / 該当なし}}（前提: Claude Code v2.1.154+ / 有効化済み）
+- **人間ゲートの扱い**: 承認・意思決定（受入基準 / 採用案 / マージ / リリース / DB・権限変更）はエンジンに委譲せず必ず人間が判断する
+
 ## Do Not
 
 - {{触ってはいけないファイル / ディレクトリ}}

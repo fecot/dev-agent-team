@@ -12,12 +12,14 @@
 # 環境変数（テスト・カスタム配置用）:
 #   DEV_AGENT_TEAM_ROOT  クローン先（デフォルト: ~/.claude/dev-agent-team）
 #   CLAUDE_COMMANDS_DIR  入口コマンドの配置先（デフォルト: ~/.claude/commands）
+#   CLAUDE_WORKFLOWS_DIR Dynamic Workflow の配置先（デフォルト: ~/.claude/workflows）
 
 set -euo pipefail
 
 # ---- 設定 ----
 DEV_AGENT_TEAM_ROOT="${DEV_AGENT_TEAM_ROOT:-${HOME}/.claude/dev-agent-team}"
 CLAUDE_COMMANDS_DIR="${CLAUDE_COMMANDS_DIR:-${HOME}/.claude/commands}"
+CLAUDE_WORKFLOWS_DIR="${CLAUDE_WORKFLOWS_DIR:-${HOME}/.claude/workflows}"
 
 # グローバル配置するコマンド（dev-agent-team 本体に同梱）
 COMMANDS=(
@@ -27,6 +29,12 @@ COMMANDS=(
   "codebase-explore.md"
   "safe-implement.md"
   "pr-review.md"
+)
+
+# グローバル配置する Dynamic Workflow（dev-agent-team 本体に同梱）
+# 注: 利用には Claude Code v2.1.154 以降 + Dynamic Workflows の有効化が必要。
+WORKFLOWS=(
+  "dev-agent-discovery.js"
 )
 
 # pre-flight チェックの基準ファイル（クローン済みかの判定に使う）
@@ -104,6 +112,46 @@ done
 
 info "${INSTALLED}/${TOTAL} 個のコマンドをインストールしました。"
 
+# ---- Dynamic Workflows のインストール ----
+
+if [ "${#WORKFLOWS[@]}" -gt 0 ]; then
+  info "dev-agent-team の Dynamic Workflow をインストールしています（${#WORKFLOWS[@]} 個）..."
+
+  mkdir -p "${CLAUDE_WORKFLOWS_DIR}"
+
+  WF_INSTALLED=0
+  WF_TOTAL=${#WORKFLOWS[@]}
+  WF_INDEX=0
+
+  for wf in "${WORKFLOWS[@]}"; do
+    WF_INDEX=$((WF_INDEX + 1))
+    WF_TARGET="${CLAUDE_WORKFLOWS_DIR}/${wf}"
+    WF_SOURCE="${DEV_AGENT_TEAM_ROOT}/dynamic-workflows/${wf}"
+
+    if [ ! -f "${WF_SOURCE}" ]; then
+      warn "[${WF_INDEX}/${WF_TOTAL}] ソースファイルが見つかりません、スキップ: ${WF_SOURCE}"
+      continue
+    fi
+
+    if [ -e "${WF_TARGET}" ] || [ -L "${WF_TARGET}" ]; then
+      warn "[${WF_INDEX}/${WF_TOTAL}] 既存ファイルを上書き: ${WF_TARGET}"
+    fi
+
+    ln -sf "${WF_SOURCE}" "${WF_TARGET}"
+
+    if [ -L "${WF_TARGET}" ]; then
+      info "[${WF_INDEX}/${WF_TOTAL}] ${WF_TARGET} -> ${WF_SOURCE}"
+      WF_INSTALLED=$((WF_INSTALLED + 1))
+    else
+      error "[${WF_INDEX}/${WF_TOTAL}] シンボリックリンクの作成に失敗: ${WF_TARGET}"
+      exit 1
+    fi
+  done
+
+  info "${WF_INSTALLED}/${WF_TOTAL} 個の Dynamic Workflow をインストールしました。"
+  info "（利用には Claude Code v2.1.154 以降 + Dynamic Workflows の有効化が必要です）"
+fi
+
 # ---- 完了 ----
 
 echo ""
@@ -116,6 +164,9 @@ echo "  /issue-to-plan          — Issue を実装計画に変換"
 echo "  /codebase-explore       — 既存コード調査"
 echo "  /safe-implement         — 計画書ベースの安全な実装"
 echo "  /pr-review              — PR 前レビュー"
+echo ""
+echo "利用可能になった Dynamic Workflow（要 v2.1.154+ / 有効化）:"
+echo "  /dev-agent-discovery    — Phase 2 Discovery の広域並列調査"
 echo ""
 echo "次の手順:"
 echo "  1. 対象プロジェクトのディレクトリで Claude Code を開く"

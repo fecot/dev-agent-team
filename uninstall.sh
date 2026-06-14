@@ -7,7 +7,8 @@
 #   ./uninstall.sh
 #
 # このスクリプトは以下を行います:
-#   - ~/.claude/commands/adopt-project.md のシンボリックリンクを削除
+#   - ~/.claude/commands/ に配置した各コマンド（COMMANDS[]）のシンボリックリンクを削除
+#   - ~/.claude/workflows/ に配置した各 Dynamic Workflow（WORKFLOWS[]）のシンボリックリンクを削除
 #
 # このスクリプトは以下を行いません（手動で削除してください）:
 #   - ~/.claude/dev-agent-team/ のクローン削除（rm -rf ~/.claude/dev-agent-team）

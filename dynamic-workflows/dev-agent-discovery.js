@@ -13,11 +13,32 @@ export const meta = {
 
 // ---- 入力の正規化 ----
 // args は以下のいずれかを受け取れる:
-//   - 文字列            → 調査の focus として扱う
-//   - { focus, paths }  → focus と、明示の候補パス配列
-const input = typeof args === 'string' ? { focus: args } : args || {}
+//   - 文字列（プレーン）        → 調査の focus として扱う
+//   - 文字列（JSON）            → 一部の起動経路では args が JSON 文字列で渡るためパースする
+//   - { focus, paths, maxFiles } → focus / 明示の候補パス配列 / 読み込み上限
+//   - 配列                      → paths として扱う
+function normalizeArgs(a) {
+  if (a == null) return {}
+  if (Array.isArray(a)) return { paths: a }
+  if (typeof a === 'string') {
+    const s = a.trim()
+    if (s.startsWith('{') || s.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(s)
+        return Array.isArray(parsed) ? { paths: parsed } : parsed
+      } catch (e) {
+        return { focus: a }
+      }
+    }
+    return { focus: a }
+  }
+  return a
+}
+const input = normalizeArgs(args)
 const focus = input.focus || '変更対象になりうる箇所と既存パターンの把握'
 const seedPaths = Array.isArray(input.paths) ? input.paths : []
+const maxFiles = Number.isInteger(input.maxFiles) ? input.maxFiles : 24
+log(`WF_DIAG: args type=${typeof args} / focus="${focus}" / seedPaths=${seedPaths.length} / maxFiles=${maxFiles}`)
 
 // ---- スキーマ定義 ----
 const SCOPE_SCHEMA = {
@@ -100,11 +121,13 @@ let files = seedPaths
 if (files.length === 0) {
   const scope = await agent(
     `この作業ディレクトリで「${focus}」に関連する既存ファイルを洗い出してほしい。\n` +
-      `エントリポイントから関連ファイルを辿り、データモデル / 型定義 / 類似実装を含めて、関連度の高い順に最大 24 件のパスを返す。`,
+      `エントリポイントから関連ファイルを辿り、データモデル / 型定義 / 類似実装を含めて、関連度の高い順に最大 ${maxFiles} 件のパスを返す。`,
     { label: 'scope', phase: 'Scope', schema: SCOPE_SCHEMA }
   )
   files = (scope && scope.files) || []
 }
+// 明示 paths / scope 列挙のどちらでも、読み込みは maxFiles 件までに制限する。
+files = files.slice(0, maxFiles)
 log(`調査対象: ${files.length} ファイル`)
 
 if (files.length === 0) {

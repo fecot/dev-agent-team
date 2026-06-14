@@ -1,0 +1,144 @@
+export const meta = {
+  name: 'dev-agent-discovery',
+  description:
+    'dev-agent-team Phase 2 (Discovery) の広域並列調査。候補ファイルを並列で読み解き、investigation-report 構造の調査レポートを返す。内部に人間ゲートはない（完了後、人間が Phase 3 へ進む前にレビューする立て付け）。',
+  whenToUse:
+    '多ファイル / 多サブシステムにまたがる既存コード調査を並列で高速化したいとき。Migration の多コンポーネント計測にも流用できる。',
+  phases: [
+    { title: 'Scope', detail: '調査対象ファイルの洗い出し' },
+    { title: 'Read', detail: '候補ファイルを並列で読解' },
+    { title: 'Synthesize', detail: 'investigation-report 構造に集約' },
+  ],
+}
+
+// ---- 入力の正規化 ----
+// args は以下のいずれかを受け取れる:
+//   - 文字列            → 調査の focus として扱う
+//   - { focus, paths }  → focus と、明示の候補パス配列
+const input = typeof args === 'string' ? { focus: args } : args || {}
+const focus = input.focus || '変更対象になりうる箇所と既存パターンの把握'
+const seedPaths = Array.isArray(input.paths) ? input.paths : []
+
+// ---- スキーマ定義 ----
+const SCOPE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['files'],
+  properties: {
+    files: {
+      type: 'array',
+      description: '調査すべき関連ファイルのパス一覧（多くても 24 件まで、関連度順）',
+      items: { type: 'string' },
+    },
+    notes: { type: 'string', description: 'スコープ判断の補足' },
+  },
+}
+
+const FILE_FINDING_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['path', 'role', 'likelyChanged'],
+  properties: {
+    path: { type: 'string' },
+    role: { type: 'string', description: 'このファイルの役割（1〜2行）' },
+    likelyChanged: { type: 'boolean', description: '今回の変更で触る可能性が高いか' },
+    patterns: {
+      type: 'array',
+      description: '抽出した既存パターン・命名規則・エラーハンドリング方針',
+      items: { type: 'string' },
+    },
+    similarImpl: { type: 'string', description: '類似実装があれば参照（なければ空文字）' },
+    dependencies: {
+      type: 'array',
+      description: 'import / 呼び出し先など主要な依存',
+      items: { type: 'string' },
+    },
+  },
+}
+
+const REPORT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['relatedFiles', 'similarImplementations', 'conventions', 'tentativeChangeList', 'openQuestions'],
+  properties: {
+    relatedFiles: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['path', 'role', 'likelyChanged'],
+        properties: {
+          path: { type: 'string' },
+          role: { type: 'string' },
+          likelyChanged: { type: 'boolean' },
+        },
+      },
+    },
+    similarImplementations: { type: 'array', items: { type: 'string' } },
+    conventions: {
+      type: 'array',
+      description: '命名規則 / エラーハンドリング / テストの書き方など',
+      items: { type: 'string' },
+    },
+    tentativeChangeList: {
+      type: 'array',
+      description: '「変更が触るかもしれない」ファイルの暫定リスト',
+      items: { type: 'string' },
+    },
+    openQuestions: {
+      type: 'array',
+      description: '人間に確認すべき不明点（Phase 3 へ渡す）',
+      items: { type: 'string' },
+    },
+  },
+}
+
+// ---- Phase: Scope ----
+// 候補パスが渡されていればそれを使い、なければ 1 エージェントで洗い出す。
+phase('Scope')
+let files = seedPaths
+if (files.length === 0) {
+  const scope = await agent(
+    `この作業ディレクトリで「${focus}」に関連する既存ファイルを洗い出してほしい。\n` +
+      `エントリポイントから関連ファイルを辿り、データモデル / 型定義 / 類似実装を含めて、関連度の高い順に最大 24 件のパスを返す。`,
+    { label: 'scope', phase: 'Scope', schema: SCOPE_SCHEMA }
+  )
+  files = (scope && scope.files) || []
+}
+log(`調査対象: ${files.length} ファイル`)
+
+if (files.length === 0) {
+  return {
+    relatedFiles: [],
+    similarImplementations: [],
+    conventions: [],
+    tentativeChangeList: [],
+    openQuestions: ['調査対象ファイルを特定できなかった。focus / paths を指定して再実行してほしい。'],
+  }
+}
+
+// ---- Phase: Read（並列読解） ----
+// pipeline で 1 ファイル = 1 reader。barrier を張らず、読み終わったものから次へ流れる。
+phase('Read')
+const findings = (
+  await pipeline(files, (path) =>
+    agent(
+      `次のファイルを読み、「${focus}」の観点で調査してほしい: ${path}\n` +
+        `役割 / 今回触る可能性 / 既存パターン・命名規則・エラーハンドリング方針 / 類似実装 / 主要な依存 を抽出する。`,
+      { label: `read:${path}`, phase: 'Read', schema: FILE_FINDING_SCHEMA }
+    )
+  )
+).filter(Boolean)
+
+// ---- Phase: Synthesize ----
+// 全ファイルの findings を 1 エージェントに渡し、investigation-report 構造へ集約する。
+phase('Synthesize')
+const report = await agent(
+  `以下は「${focus}」に関する個別ファイル調査結果の配列（JSON）。\n` +
+    `これを investigation-report 構造（関連ファイル / 類似実装 / 既存パターン・命名規則 / 暫定変更候補リスト / 人間への確認事項）に集約してほしい。\n` +
+    `推測で埋めず、確認が必要な点は openQuestions に出す。\n\n` +
+    JSON.stringify(findings, null, 2),
+  { label: 'synthesize', phase: 'Synthesize', schema: REPORT_SCHEMA }
+)
+
+return report

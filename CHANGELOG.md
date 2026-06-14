@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **`docs/native-tooling-integration.md`** 新規追加 — Claude Code ネイティブの `/goal`（自律ループ）/ Dynamic Workflows（並列オーケストレーション）と 8 Phase ワークフローの併用ルールを定義。「dev-agent-team は冗長か?」への回答（型 vs エンジンのレイヤー対比表）、`/goal` は機械的サブループ限定（evaluator 制約に合わせた条件テンプレ付き）、Dynamic Workflows は単一フェーズ内 fan-out 限定、判断早見表、エンジンに委譲しない人間判断のコア、を収録。**人間ゲートをエンジンに越えさせない**ことを大原則に
+- **`dynamic-workflows/dev-agent-discovery.js`** 新規追加 — Phase 2 Discovery を並列化する Dynamic Workflow の実装例。候補ファイルを並列読解し `templates/investigation-report-template.md` 構造のレポート（関連ファイル / 類似実装 / 既存パターン / 暫定変更候補 / 確認事項）を返す。内部に人間ゲートは無く、完了後に人間が Phase 3 へ進む前にレビューする立て付け。`args` で focus / paths を受け取れる。`/dev-agent-discovery` で起動（要 Claude Code v2.1.154+ / 有効化）
+- **Stop Condition のタグ付け規約** — `workflows/feature-development.md` に〔機械検証可〕（`/goal` で自動判定してよい）/〔人間判断〕（自動化しない）の区別を導入。タグなしは人間判断寄りとして扱う。Phase 5 の機械的 Stop Condition に適用例を付与
+- **`templates/project-rules-template.md` の Execution Engine 方針セクション** — プロジェクト側で `/goal` / Dynamic Workflows の使用方針（許可 / 禁止 / 限定）と人間ゲートの扱いを宣言できる項目を追加
 - **視覚仕様レビューゲート（Phase 4 → 5）** (マイグレーション振り返りフィードバック由来、一般化して追加) — UI（画面・コンポーネント・レイアウト・見た目）を伴う変更では、Phase 4 で視覚仕様スケッチ（ASCII ワイヤーフレーム / mock / 注釈付きスクショ等）を作り、Phase 5 開始前に人間が合意するゲートを新設。「実装してから『思っていたのと違う』」の手戻りを防ぐ。`workflows/feature-development.md` の Phase 4 Action/Output/Stop Condition + Human Decision Points、`agents/implementation-driver.md` の出力テンプレ/セルフチェック/行動原則、`commands/run-feature-workflow.md` Execution Rules、`commands/safe-implement.md` 実行フロー/セーフガードに反映。Migration に限らず UI 変更全般に適用
 - **振り返りによる Known Risks 蓄積運用（Phase 8）** (マイグレーション振り返りフィードバック由来、一般化して追加) — Phase 8（Release Check）に振り返りステップを追加。「次回また踏みそうな罠」を 1 行ずつ抽出し、対象リポジトリの Project Rules の Known Risks への追記を人間に提案する（同じ罠を毎回踏むのを止める蓄積運用）。`workflows/feature-development.md` Phase 8 Action/Output + Human Decision Points、`agents/release-captain.md` 責務/出力/行動原則、`templates/project-rules-template.md` の Known Risks セクションに反映。追記は提案であり Project Rules の書き換え可否は人間が判断する
 - **受け入れ基準の明示承認を Stop Condition 化（Phase 1）** (マイグレーション振り返りフィードバック由来、一般化して追加) — 受入基準を列挙しただけでは Phase 2 に進まず、人間が「これで進めてよい」と明示承認するまで停止する Stop Condition を追加（「確認事項がない」＝「承認済み」ではない）。認識ズレを早い段階で炙り出す。`workflows/feature-development.md` Phase 1 + `agents/product-interpreter.md` Stop Condition に反映
@@ -46,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **仕様書末尾の TODO セクション** — 後回し論点として「各分岐の `--dry` 出力例追加」を記録
 
 ### Changed
+- **ネイティブ実行エンジン併用のポインタを各所に追加** — `workflows/feature-development.md`（Rule Priority 直後に併用節 + Phase 2/5/6/7 に 1 行注記）、`commands/run-feature-workflow.md`（Execution Rules）、`README.md`（「ネイティブ機能との関係」節 + 構成図に `dynamic-workflows/` + Dynamic Workflows 一覧）、`CONCEPT.md`（「型とエンジンは別レイヤー」段落）から `docs/native-tooling-integration.md` を参照
+- **`install.sh` / `uninstall.sh` に `WORKFLOWS` 配列を追加** — `dynamic-workflows/*.js` を `~/.claude/workflows/` に symlink 配置 / 削除する処理を追加（`CLAUDE_WORKFLOWS_DIR` env override 対応）。コマンドの symlink 処理と対称
 - **Migration サブフロー Phase 2 に「全画面スクショ + 可視要素インベントリ」を必須化** (マイグレーション振り返りフィードバック由来) — `skills/migration-spec-capture.md` の採取項目に「0. 全画面スクリーンショット + 可視要素インベントリ」を追加し、`workflows/feature-development.md` § 6.1 Phase 2 チェックリストにも反映。コード/要件から拾った要素だけ計測すると「画面に存在するのに認識していない要素」を丸ごと見落とすため、実機の見た目から要素を棚卸しする。あわせて「ロジックと CSS（専用スタイルシートの所在）を両方 Discovery する（CSS を後回しにしない）」を明記。Stop Condition も追加
 - **`skills/browser-verification.md` のキャッシュバイパスを `no-store` に強化** (マイグレーション振り返りフィードバック由来) — Step 3 / `cacheBustReload` の注入ヘッダを `Cache-Control: no-cache` から `no-store` に変更（レスポンスのキャッシュ保存自体を抑止し、古い bundle を掴む事故を防ぐ）。「反映されない体感の多くはキャッシュ起因。目視で悩む前に定型手順として通す」旨を追記
 - **`commands/run-feature-workflow.md` の Inputs に「タスク種別」フィールド追加** (PRA-11459 フィードバック由来) — 通常 / Migration / UI Replica / Hotfix のいずれかを起動時に人間が宣言する仕様。自動判定はしない（誤判定で誤サブフローが走るリスク回避）。When Not to Use の Hotfix 記述を新サブフローと整合させた

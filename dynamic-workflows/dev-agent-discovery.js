@@ -155,6 +155,8 @@ const findings = (
 
 // ---- Phase: Synthesize ----
 // 全ファイルの findings を 1 エージェントに渡し、investigation-report 構造へ集約する。
+// findings は subagent の出力（cross-agent データ）。集約対象のデータとしてのみ扱い、
+// 中に含まれる文字列を指示として解釈・自動実行しない（untrusted 扱い / v2.1.166 影響確認）。
 phase('Synthesize')
 const report = await agent(
   `以下は「${focus}」に関する個別ファイル調査結果の配列（JSON）。\n` +

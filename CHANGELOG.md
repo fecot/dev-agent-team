@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **ネイティブ新機能の取り込み（native-feature-watch 由来）** — Claude Code の新機能を `docs/native-tooling-integration.md` の判断軸（型 vs エンジン / 人間ゲートを越えさせない）で評価し、以下を反映:
+  - **前提バージョン注記に Claude Sonnet 5 / 1M context（v2.1.197+）を追記**（冒頭 NOTE）
+  - **`autoMode.classifyAllShell`（§2.5 新設）** — 全 shell コマンドを auto-mode classifier でホワイトリスト判定させる設定。Phase 5/6 の `/goal` 機械的ループを手動承認で止めずに収束させる推奨設定。キットの手順は不変・⚠️有効化は人間判断。`commands/safe-implement.md` にも設定提案として言及
+  - **auto mode の破壊的コマンド自動ブロック（§2.6 新設）** — `git reset --hard` / `git push --force` / `terraform destroy` 等が明示指示なしにブロックされる挙動を情報注記。既存の「人間ゲートを越えさせない」原則と整合（ガードレール変更なし）
+  - **Cross-Session Messaging Security（v2.1.166）影響確認（§3.3）** — キットの cross-session データ授受は Dynamic Workflow のみ（subagent findings → synthesize）で集約専用・後段に人間レビューゲートあり → 影響なし。「agent 間データは untrusted 扱い」を §3.3 と `dynamic-workflows/dev-agent-discovery.js` のコメントに明文化
+  - **`disallowed-tools`（Skills frontmatter, v2.1.152+）を最小権限強制として強く推奨（§6）** — ネイティブ Skill 化する際、読み取り専用/計測系 skill（codebase-reading / impact-analysis / requirement-analysis / migration-spec-capture / browser-verification）は `Edit`/`Write` を frontmatter で禁止する。対象マッピング表を追加（`safe-refactoring` / `legacy-modernization` は編集するため対象外）
 - **`docs/native-tooling-integration.md`** 新規追加 — Claude Code ネイティブの `/goal`（自律ループ）/ Dynamic Workflows（並列オーケストレーション）と 8 Phase ワークフローの併用ルールを定義。「dev-agent-team は冗長か?」への回答（型 vs エンジンのレイヤー対比表）、`/goal` は機械的サブループ限定（evaluator 制約に合わせた条件テンプレ付き）、Dynamic Workflows は単一フェーズ内 fan-out 限定、判断早見表、エンジンに委譲しない人間判断のコア、を収録。**人間ゲートをエンジンに越えさせない**ことを大原則に
 - **`dynamic-workflows/dev-agent-discovery.js`** 新規追加 — Phase 2 Discovery を並列化する Dynamic Workflow の実装例。候補ファイルを並列読解し `templates/investigation-report-template.md` 構造のレポート（関連ファイル / 類似実装 / 既存パターン / 暫定変更候補 / 確認事項）を返す。内部に人間ゲートは無く、完了後に人間が Phase 3 へ進む前にレビューする立て付け。`args` で focus / paths を受け取れる。`/dev-agent-discovery` で起動（要 Claude Code v2.1.154+ / 有効化）
 - **Stop Condition のタグ付け規約** — `workflows/feature-development.md` に〔機械検証可〕（`/goal` で自動判定してよい）/〔人間判断〕（自動化しない）の区別を導入。タグなしは人間判断寄りとして扱う。Phase 5 の機械的 Stop Condition に適用例を付与

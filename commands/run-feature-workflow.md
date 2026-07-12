@@ -135,6 +135,8 @@
 | 7 | Review Gate | `agents/review-gatekeeper.md` | `commands/pr-review.md` / `templates/pr-description-template.md` |
 | 8 | Release Check | `agents/release-captain.md` | — |
 
+> 注: レガシー改修時は `skills/legacy-modernization.md` を Phase 2〜5 で併用する。タスク種別（Migration / UI Replica / Hotfix）宣言時の追加参照は workflow 側の §2 / §6 が正。
+
 ## Phase 0: Project Context Loading
 
 Phase 1 以降に進む前に、対象リポジトリのルール・技術スタック・禁止事項を読み込む。**この Phase をスキップしてはいけない。**

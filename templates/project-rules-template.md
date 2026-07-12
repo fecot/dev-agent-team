@@ -67,7 +67,7 @@ Phase 0（Project Context Loading）はこの値を読み、ホーム配下の `
 
 > このセクションは、対象アプリケーションが **レガシー MVC アプリケーション** や独自フレームワーク採用アプリケーションの場合のみ記入してください。新規アプリ・既に Clean Architecture 等で設計されたアプリでは「該当なし」と明記して構いません。
 >
-> 詳細な行動原則は [`skills/legacy-modernization.md`](../skills/legacy-modernization.md) を参照。
+> 詳細な行動原則は `~/.claude/dev-agent-team/skills/legacy-modernization.md` を参照。
 
 - **対象アプリの構造**: {{MVC / 独自MVC / レイヤー混在 / Active Record パターン 等}}
 - **採用フレームワーク特性**: {{古いMVCFW / 独自FW / ORM / テンプレートエンジン 等}}
@@ -199,7 +199,7 @@ src/
 
 ## Execution Engine 方針
 
-> Claude Code ネイティブの `/goal` / Dynamic Workflows をこのプロジェクトで使うかの方針。詳細は dev-agent-team の [`docs/native-tooling-integration.md`](../docs/native-tooling-integration.md) を参照。未使用なら「該当なし」と明記してよい。
+> Claude Code ネイティブの `/goal` / Dynamic Workflows をこのプロジェクトで使うかの方針。詳細は dev-agent-team の `~/.claude/dev-agent-team/docs/native-tooling-integration.md` を参照。未使用なら「該当なし」と明記してよい。
 
 - **`/goal` の使用**: {{許可 / 禁止 / 機械的サブループ限定（テスト緑化・lint・typecheck のみ） / 該当なし}}
 - **Dynamic Workflows の使用**: {{許可 / 禁止 / 単一フェーズ内 fan-out 限定 / 該当なし}}（前提: Claude Code v2.1.154+ / 有効化済み）

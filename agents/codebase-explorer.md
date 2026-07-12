@@ -19,6 +19,8 @@
 
 ## 出力
 
+> 以下のフォーマットは調査中の内部整理用。成果物として出力する際は `templates/investigation-report-template.md` に従う（縮約規定は `commands/codebase-explore.md` を参照）。
+
 ```
 # コードベース調査レポート
 

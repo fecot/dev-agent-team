@@ -43,6 +43,8 @@ dev-agent-team は **アプリケーションコードではありません**。
 
 新規に dev-agent-team を導入するときの段取りです。
 
+> Step 2〜5 は `/adopt-project` コマンドで対話的に半自動実行できます（詳細は [`commands/adopt-project.md`](../commands/adopt-project.md)）。手動で行う場合は以下。
+
 ### Step 1. 対象リポジトリに `CLAUDE.md` があるか確認する
 
 すでに `CLAUDE.md` がある場合は、その中で
@@ -176,7 +178,14 @@ Project Rules は「Claude Code に正確に伝わる文書」である必要が
 - **Stop Condition が出たら無理に進めない** — Stop Condition は「ここで止まれ」というシグナルです。バイパスせず、足りない情報を埋めるか、人間に判断を仰ぐ
 - **Human Decision Point は人間が判断する** — 採用案・DB変更承認・リリース可否は AI に委ねない。判断材料は AI が出すが、判断は人間がする
 - **失敗事例が出たら Project Rules に反映する** — レビューで指摘されたパターン、本番で起きた問題、見落とした観点は、次回以降の Phase 0 で拾えるように **Project Rules に追記** する。これによって型は時間とともに鍛えられる
-- **Artifacts は原則として一時成果物として扱う** — 詳細は次の §9 Artifacts Retention Policy を参照
+- **Artifacts は原則として一時成果物として扱う** — 詳細は §9 Artifacts Retention Policy を参照
+
+---
+
+## 8. 導入コマンドとバージョン運用
+
+- **導入の半自動化**: §3 の Step 2〜5 は [`commands/adopt-project.md`](../commands/adopt-project.md)（`/adopt-project`）で対話的に実行できる。既導入リポジトリの状態診断・差分アップデートにも対応する
+- **バージョンピン留め**: キットのバージョン（`version.txt`）と Project Rules の `dev_agent_team_version` / `dev_agent_team_min_version` による整合チェックの詳細は、[`commands/adopt-project.md`](../commands/adopt-project.md)（SemVer 比較・分岐 E）と [`README.md`](../README.md) を正とする。本ガイドには複製しない
 
 ---
 

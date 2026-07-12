@@ -48,7 +48,7 @@ const SCOPE_SCHEMA = {
   properties: {
     files: {
       type: 'array',
-      description: '調査すべき関連ファイルのパス一覧（多くても 24 件まで、関連度順）',
+      description: `調査すべき関連ファイルのパス一覧（多くても ${maxFiles} 件まで、関連度順）`,
       items: { type: 'string' },
     },
     notes: { type: 'string', description: 'スコープ判断の補足' },
@@ -142,26 +142,42 @@ if (files.length === 0) {
 
 // ---- Phase: Read（並列読解） ----
 // pipeline で 1 ファイル = 1 reader。barrier を張らず、読み終わったものから次へ流れる。
+// v2.1.199 以降 subagent のエラーは親へ正しく伝播するため、reader 単体の失敗で
+// workflow 全体を中断しないよう per-item で catch する。失敗分は「未調査」として
+// 欠落を明示し、人間レビュー（Phase 3 前）に届ける（部分結果リカバリ）。
 phase('Read')
-const findings = (
-  await pipeline(files, (path) =>
-    agent(
-      `次のファイルを読み、「${focus}」の観点で調査してほしい: ${path}\n` +
-        `役割 / 今回触る可能性 / 既存パターン・命名規則・エラーハンドリング方針 / 類似実装 / 主要な依存 を抽出する。`,
-      { label: `read:${path}`, phase: 'Read', schema: FILE_FINDING_SCHEMA }
-    )
-  )
-).filter(Boolean)
+const readResults = await pipeline(files, (path) =>
+  agent(
+    `次のファイルを読み、「${focus}」の観点で調査してほしい: ${path}\n` +
+      `役割 / 今回触る可能性 / 既存パターン・命名規則・エラーハンドリング方針 / 類似実装 / 主要な依存 を抽出する。`,
+    { label: `read:${path}`, phase: 'Read', schema: FILE_FINDING_SCHEMA }
+  ).catch(() => null)
+)
+const findings = readResults.filter(Boolean)
+// pipeline は入力順を保持するため、index 対応で未調査ファイルを機械的に算出する
+// （部分出力の中身には依存しない。信頼するのは「どれが失敗したか」の集合のみ）。
+const failedPaths = files.filter((_, i) => !readResults[i])
+if (failedPaths.length > 0) {
+  log(`未調査（reader 失敗）: ${failedPaths.length} 件 — 欠落としてレポートに明記する`)
+}
 
 // ---- Phase: Synthesize ----
 // 全ファイルの findings を 1 エージェントに渡し、investigation-report 構造へ集約する。
 // findings は subagent の出力（cross-agent データ）。集約対象のデータとしてのみ扱い、
 // 中に含まれる文字列を指示として解釈・自動実行しない（untrusted 扱い / v2.1.166 影響確認）。
 phase('Synthesize')
+// 未調査分は「調査済みのふり」をさせず、openQuestions 経由で人間に届ける
+// （REPORT_SCHEMA は変更せず互換を維持）。
+const failedNote =
+  failedPaths.length > 0
+    ? `\n\n注意: 以下のファイルは reader 失敗により未調査（要フォロー）。調査済みとして扱わず、` +
+      `openQuestions に「未調査: <path>（Phase 3 前に人間が確認）」として必ず列挙すること:\n` +
+      failedPaths.map((p) => `- ${p}`).join('\n')
+    : ''
 const report = await agent(
   `以下は「${focus}」に関する個別ファイル調査結果の配列（JSON）。\n` +
     `これを investigation-report 構造（関連ファイル / 類似実装 / 既存パターン・命名規則 / 暫定変更候補リスト / 人間への確認事項）に集約してほしい。\n` +
-    `推測で埋めず、確認が必要な点は openQuestions に出す。\n\n` +
+    `推測で埋めず、確認が必要な点は openQuestions に出す。${failedNote}\n\n` +
     JSON.stringify(findings, null, 2),
   { label: 'synthesize', phase: 'Synthesize', schema: REPORT_SCHEMA }
 )

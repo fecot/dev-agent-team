@@ -45,6 +45,8 @@
 
 タグのないものは原則 **〔人間判断〕寄り** として扱い、自動化前に人間に確認する。
 
+〔機械検証可〕タグの Stop Condition は hooks で機械的に強制できる（[`docs/native-tooling-integration.md`](../docs/native-tooling-integration.md) §2.7 参照）。**〔人間判断〕は hooks 化しない**（自動判定 = 人間ゲートの代行になるため）。
+
 ### 前提: Project Context Loading
 
 8 Phase に入る前に、**Phase 0** として対象リポジトリの Project Rules・技術スタック・禁止事項を読み込む。Phase 0 を経ていない状態で Phase 1 以降に進んではならない。詳細は下記 Phase 0 を参照。
@@ -335,6 +337,7 @@
 - 完了条件と紐づかないテストしかない
 - 異常系・境界値の観点が抜けている
 - 影響範囲に含まれるのにテストされていない領域がある
+- 〔機械検証可〕列挙したテストが実行されていない、または緑化していない（最新のテスト全出力で 0 failures が確認できない）
 
 ---
 
@@ -360,6 +363,8 @@ PR を出す前のセルフレビューと PR 説明文を作る。
   - テスト結果が記載されているか
 - セキュリティ観点（OWASP Top 10）の自己点検
 - （任意）大きな差分のレビューは Dynamic Workflow で多視点・敵対的 verify（観点別 reviewer → 各指摘を独立 skeptic が反証）に並列化できる。マージ可否の判断は人間が行う（[`docs/native-tooling-integration.md`](../docs/native-tooling-integration.md)）
+
+> **レビューの段階構造**（ネイティブ機能との分担）: 一次スキャン = ネイティブ `/review`（シングルパス）、指摘の網羅生成 = ネイティブ `/code-review <level>`（多エージェント、v2.1.202+）、判定観点と Go / No Go / 条件付き Go の整理 = キットの ReviewGatekeeper・`/pr-review`、**マージ可否の判断 = 人間**。標準的なコードレビューはネイティブ `/code-review`、キット固有観点の敵対的 sweep やコード以外の成果物レビューは Dynamic Workflow（docs §3）。なお `/code-review` は内部で「広く生成 → 独立検証で反証 → フィルタ」の段階構造を取る（docs §3.2 の敵対的 verify と同型）。
 
 #### Output
 - 完成した PR 説明文

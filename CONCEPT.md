@@ -55,8 +55,10 @@ Claude Code 本体は `/goal`（自律ループ）や Dynamic Workflows（並列
 
 両者は競合せず積み重なる。dev-agent-team は **自分の判断の型を、より強力なエンジンで実行する** ために `/goal` や Dynamic Workflows を取り込む。ただし「判断は人間」という原則は変えない——エンジンには **人間ゲートを越えさせない**。具体的な併用ルールは [`docs/native-tooling-integration.md`](docs/native-tooling-integration.md) に定義する。
 
+なお、人間ゲートの非代行性は文書上の約束に留まらず、ランタイム側でも保証されつつある（エージェント間メッセージでは承認が成立しない、承認ダイアログは既定で人間を待ち続ける、等）。型とエンジンの安全機構は二重防御の関係にある。詳細は [`docs/native-tooling-integration.md`](docs/native-tooling-integration.md) § 5.1。
+
 ## エージェンシー・ラダーのどこで効くか
 
-Claude 系の機能は「AI がどこまで先に動くか（エージェンシー）」で 3 段に並べられる——**Tier 1: 人間起点**（Projects / Artifacts、便利になるが進め方は変わらない）、**Tier 2: 継続学習**（Memory / CLAUDE.md、AI が文脈を覚える）、**Tier 3: AI 起点**（`/goal` / Dynamic Workflows / Scheduled Tasks、AI が先に動き人間が確認する）。上の段ほど強力だが、その分「AI が確認ゲートまで飛び越える」リスクも上がる。
+Claude 系の機能は「AI がどこまで先に動くか（エージェンシー）」で 3 段に並べられる——**Tier 1: 人間起点**（Projects / Artifacts、便利になるが進め方は変わらない）、**Tier 2: 継続学習**（Memory / CLAUDE.md、AI が文脈を覚える）、**Tier 3: AI 起点**（`/goal` / Dynamic Workflows / Scheduled Tasks / Agent Teams（実験的機能）、AI が先に動き人間が確認する）。上の段ほど強力だが、その分「AI が確認ゲートまで飛び越える」リスクも上がる。Agent Teams のようにリード AI がチームメイト AI の計画を承認する仕組みでも、**リードの承認は人間の承認ではない**。
 
 dev-agent-team が本領を発揮するのは Tier 3 だ。エンジンの勢いに **「ここは AI が先に動いてよい／ここは必ず人間が確認する」の線引き** を与える。全機能を覚える必要はない——いまの自分の段を見極め、Tier 2 で文脈を固めてから Tier 3 のエンジン併用へ 1 段ずつ上がればよい。線引きの実体は Human Decision Point であり、それこそが本キットの存在意義だ。詳細は [`docs/native-tooling-integration.md`](docs/native-tooling-integration.md) § 1.1。

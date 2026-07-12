@@ -37,7 +37,7 @@ UI に影響する実装では、**1 修正ごとに** `skills/browser-verificat
 
 ## 機械的ループの自動化（任意設定）
 
-Phase 5 でテスト緑化 / lint / typecheck を `/goal` の機械的サブループで収束させる場合、settings.json の `autoMode.classifyAllShell`（全 shell コマンドを auto-mode classifier でホワイトリスト判定）を有効化すると、手動承認でループが止まりにくくなる。auto mode 中は破壊的コマンド（`git reset --hard` / `git push --force` / `terraform destroy` 等）が明示指示なしに自動ブロックされるため、無人ループでも取り返しのつかない操作は走らない。
+Phase 5 でテスト緑化 / lint / typecheck を `/goal` の機械的サブループで収束させる場合、ユーザー設定（`~/.claude/settings.json`）の `autoMode.classifyAllShell`（全 shell コマンドを auto-mode classifier でホワイトリスト判定）を有効化すると、手動承認でループが止まりにくくなる。auto mode 中は破壊的コマンド（`git reset --hard` / `git push --force` / `terraform destroy` 等）が明示指示なしに自動ブロックされるため、無人ループでも取り返しのつかない操作は走らない。
 
 ただし **Phase 5 のセーフガード（計画外変更は人間へ）は維持** する。⚠️ プロジェクトごとに有効化するかは人間判断。詳細は [`docs/native-tooling-integration.md`](../docs/native-tooling-integration.md) § 2.5 / § 2.6。
 

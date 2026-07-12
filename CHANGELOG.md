@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **エージェンシー・ラダー（Tier 1〜3）による位置づけ整理** — 「1%しか知らない Claude の 17 機能」（[@swarm_japan](https://x.com/swarm_japan/status/2060287955533738127) / 元 [@AnatoliKopadze](https://x.com/AnatoliKopadze/status/2057813254617858078)）の「AI の自律度で機能を並べる」枠組みを取り込み。`docs/native-tooling-integration.md` § 1.1 に Tier 定義表（Tier 1 人間起点 / Tier 2 継続学習 / Tier 3 AI 起点）を新設し、**dev-agent-team は Tier 3（AI 起点）に確認ゲート（Human Decision Point）の線引きを持ち込む型** と位置づけ。`CONCEPT.md` に段階導入の語り口として 1 段落を追加。コンシューマ製品側の機能（Cowork / Chrome 拡張 / Design 等）は本キットの射程外として割愛
 - **ネイティブ新機能の取り込み（native-feature-watch 由来）** — Claude Code の新機能を `docs/native-tooling-integration.md` の判断軸（型 vs エンジン / 人間ゲートを越えさせない）で評価し、以下を反映:
   - **前提バージョン注記に Claude Sonnet 5 / 1M context（v2.1.197+）を追記**（冒頭 NOTE）
   - **`autoMode.classifyAllShell`（§2.5 新設）** — 全 shell コマンドを auto-mode classifier でホワイトリスト判定させる設定。Phase 5/6 の `/goal` 機械的ループを手動承認で止めずに収束させる推奨設定。キットの手順は不変・⚠️有効化は人間判断。`commands/safe-implement.md` にも設定提案として言及

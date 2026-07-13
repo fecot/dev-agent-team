@@ -204,6 +204,7 @@ src/
 - **`/goal` の使用**: {{許可 / 禁止 / 機械的サブループ限定（テスト緑化・lint・typecheck のみ） / 該当なし}}
 - **Dynamic Workflows の使用**: {{許可 / 禁止 / 単一フェーズ内 fan-out 限定 / 該当なし}}（前提: Claude Code v2.1.154+ / 有効化済み）
 - **人間ゲートの扱い**: 承認・意思決定（受入基準 / 採用案 / マージ / リリース / DB・権限変更）はエンジンに委譲せず必ず人間が判断する
+- **HDP の permissions 固定**: {{deny / ask ルールとして settings.json に固定した境界の一覧（例: main への push 禁止） / 該当なし}}（会話で述べた境界は compaction で失われうるため、恒久保証は deny ルール。deny / ask は project 側 `.claude/settings.json` でも workspace trust なしで適用される）
 
 ## Do Not
 

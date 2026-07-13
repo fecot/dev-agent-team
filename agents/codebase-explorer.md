@@ -48,3 +48,7 @@
 - 「たぶんここにある」で終わらせず、実際に確認する
 - 類似実装が見つかったら、それに合わせることを優先する
 - 設計上の判断（なぜそうなっているか）が読み取れる場合はコメントに残す
+
+## Stop Condition
+
+workflows/feature-development.md の Phase 2（Discovery）の Stop Condition を正とする。

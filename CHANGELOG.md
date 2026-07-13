@@ -18,6 +18,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **`uninstall.sh` の symlink 削除に安全チェックを追加** — readlink でリンク先が `DEV_AGENT_TEAM_ROOT` 配下であることを検証し、配下でなければ「別ツールの symlink のためスキップ」として保護（他ツールの同名 symlink の誤削除を防止）
+- **プレースホルダ記法の統一** — 実行時に決まるパス（`.dev-agent-team/runs/{issue-id}/` 等）は `{issue-id}`（単一波括弧）に統一（`{{}}` はテンプレ利用者が埋める変数、`{}` は実行時の可変値）。`docs/adoption-guide.md` / `skills/legacy-modernization.md` / `templates/project-rules-template.md` に適用
+- **`examples/sample-workflow-output.md` の Artifacts パスを `docs/adoption-guide.md` §9 の推奨レイアウト（`runs/{issue-id}/` 単位）に整合**。Phase 0（Project Context Loading）の実行例も追加
+- **`examples/sample-issue.md` を `templates/issue-template.md` の構造（必須 / 該当時のみ必須 / 任意）に再構成**（題材・内容は維持）
+
+### Changed
+- **`install.sh` / `uninstall.sh` の COMMANDS / WORKFLOWS 配列を `manifest.sh` に一本化**（両スクリプトから source。追加・削除は manifest.sh のみ編集）
+- **`CLAUDE.md` のファイル構成の規則に `workflows/` / `dynamic-workflows/` / `docs/` を追記**
+- **README に「8 Phase」呼称の注記（Phase 0 を含めると 9 段階）と `docs/troubleshooting.md` への導線を追加**
+- **agents 6 ファイル（architecture-reviewer / codebase-explorer / implementation-driver / release-captain / review-gatekeeper / test-strategist）に Stop Condition 節を追加** — 内容は複製せず `workflows/feature-development.md` の対応 Phase への参照に統一
+- **`skills/` 基本 5 ファイル（codebase-reading / impact-analysis / requirement-analysis / safe-refactoring / test-design）の冒頭に対応 Phase を明記**
+- **`agents/implementation-driver.md` の数値固定方針に、実測値は `skills/migration-spec-capture.md` の計測結果（Phase 2）から取得する旨を追記**。`agents/test-strategist.md` に使用スキル（`skills/test-design.md`）を追記
+
 ## [v0.2.0] - 2026-07-13
 
 ### Added

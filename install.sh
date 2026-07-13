@@ -21,21 +21,9 @@ DEV_AGENT_TEAM_ROOT="${DEV_AGENT_TEAM_ROOT:-${HOME}/.claude/dev-agent-team}"
 CLAUDE_COMMANDS_DIR="${CLAUDE_COMMANDS_DIR:-${HOME}/.claude/commands}"
 CLAUDE_WORKFLOWS_DIR="${CLAUDE_WORKFLOWS_DIR:-${HOME}/.claude/workflows}"
 
-# グローバル配置するコマンド（dev-agent-team 本体に同梱）
-COMMANDS=(
-  "adopt-project.md"
-  "run-feature-workflow.md"
-  "issue-to-plan.md"
-  "codebase-explore.md"
-  "safe-implement.md"
-  "pr-review.md"
-)
-
-# グローバル配置する Dynamic Workflow（dev-agent-team 本体に同梱）
-# 注: 利用には Claude Code v2.1.154 以降 + Dynamic Workflows の有効化が必要。
-WORKFLOWS=(
-  "dev-agent-discovery.js"
-)
+# グローバル配置するコマンド・Dynamic Workflow の一覧（manifest.sh に一本化）
+# shellcheck source=manifest.sh
+source "$(dirname "$0")/manifest.sh"
 
 # pre-flight チェックの基準ファイル（クローン済みかの判定に使う）
 ENTRY_COMMAND="adopt-project.md"

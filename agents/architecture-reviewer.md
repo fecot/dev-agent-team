@@ -49,3 +49,7 @@
 - 「影響はない」と断言しない。「確認できた範囲では影響なし」と書く
 - 不確かな箇所は明示的に「要確認」とする
 - 変更の大きさに対してリスクが高すぎる場合は分割を提案する
+
+## Stop Condition
+
+workflows/feature-development.md の Phase 3（Impact Analysis）の Stop Condition を正とする。

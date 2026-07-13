@@ -79,7 +79,7 @@ Phase 0（Project Context Loading）はこの値を読み、ホーム配下の `
   - {{ディレクトリ追加の可否}}
   - {{命名規則の制約}}
 - **Characterization Test の方針**: {{書ける範囲 / 書けない場合の代替（手動確認・スクリーンショット比較）}}
-- **Replacement Notes の保存先**: {{PR本文 / `.dev-agent-team/runs/{{issue-id}}/replacement-notes.md` / 社内Wiki}}
+- **Replacement Notes の保存先**: {{PR本文 / `.dev-agent-team/runs/{issue-id}/replacement-notes.md` / 社内Wiki}}
 - **3案提示ルール**: レガシー改修時は Minimal Change / Local Cleanup / Replacement-Ready Boundary の **3案を必ず提示** する（{{案C採用には人間承認が必要かどうか}}）
 
 ## Directory Rules

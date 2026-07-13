@@ -26,20 +26,9 @@ DEV_AGENT_TEAM_ROOT="${DEV_AGENT_TEAM_ROOT:-${HOME}/.claude/dev-agent-team}"
 CLAUDE_COMMANDS_DIR="${CLAUDE_COMMANDS_DIR:-${HOME}/.claude/commands}"
 CLAUDE_WORKFLOWS_DIR="${CLAUDE_WORKFLOWS_DIR:-${HOME}/.claude/workflows}"
 
-# install.sh と対称: グローバル配置されたコマンドを削除する
-COMMANDS=(
-  "adopt-project.md"
-  "run-feature-workflow.md"
-  "issue-to-plan.md"
-  "codebase-explore.md"
-  "safe-implement.md"
-  "pr-review.md"
-)
-
-# install.sh と対称: グローバル配置された Dynamic Workflow を削除する
-WORKFLOWS=(
-  "dev-agent-discovery.js"
-)
+# install.sh と対称: グローバル配置されたコマンド・Dynamic Workflow の一覧（manifest.sh に一本化）
+# shellcheck source=manifest.sh
+source "$(dirname "$0")/manifest.sh"
 
 # ---- カラー出力 ----
 GREEN='\033[0;32m'
@@ -71,6 +60,17 @@ for cmd in "${COMMANDS[@]}"; do
 
   if [ -L "${TARGET}" ]; then
     LINK_TARGET="$(readlink "${TARGET}")"
+
+    # リンク先が dev-agent-team 配下でなければ別ツールの symlink とみなして消さない
+    case "${LINK_TARGET}" in
+      "${DEV_AGENT_TEAM_ROOT}"/*) ;;
+      *)
+        warn "[${INDEX}/${TOTAL}] 別ツールの symlink のためスキップ: ${TARGET} -> ${LINK_TARGET}"
+        PROTECTED=$((PROTECTED + 1))
+        continue
+        ;;
+    esac
+
     info "[${INDEX}/${TOTAL}] 削除: ${TARGET} -> ${LINK_TARGET}"
     rm -f "${TARGET}"
 
@@ -103,6 +103,17 @@ for wf in "${WORKFLOWS[@]}"; do
 
   if [ -L "${TARGET}" ]; then
     LINK_TARGET="$(readlink "${TARGET}")"
+
+    # リンク先が dev-agent-team 配下でなければ別ツールの symlink とみなして消さない
+    case "${LINK_TARGET}" in
+      "${DEV_AGENT_TEAM_ROOT}"/*) ;;
+      *)
+        warn "[wf ${WF_INDEX}/${WF_TOTAL}] 別ツールの symlink のためスキップ: ${TARGET} -> ${LINK_TARGET}"
+        PROTECTED=$((PROTECTED + 1))
+        continue
+        ;;
+    esac
+
     info "[wf ${WF_INDEX}/${WF_TOTAL}] 削除: ${TARGET} -> ${LINK_TARGET}"
     rm -f "${TARGET}"
 
@@ -120,7 +131,7 @@ for wf in "${WORKFLOWS[@]}"; do
 done
 
 echo ""
-info "結果: 削除 ${REMOVED} 件 / 不在 ${SKIPPED} 件 / 保護（実ファイル） ${PROTECTED} 件"
+info "結果: 削除 ${REMOVED} 件 / 不在 ${SKIPPED} 件 / 保護（実ファイル・別ツール symlink） ${PROTECTED} 件"
 
 if [ "${REMOVED}" -eq 0 ] && [ "${PROTECTED}" -eq 0 ]; then
   info "アンインストールするものがありませんでした。"

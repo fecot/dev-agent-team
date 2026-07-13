@@ -1,5 +1,7 @@
 # Skill: 要件分析
 
+> 主に Phase 1（Intake）で使用する。
+
 ## 概要
 
 イシューや口頭メモから、実装可能な要件に変換するスキル。ProductInterpreter エージェントが使用する。

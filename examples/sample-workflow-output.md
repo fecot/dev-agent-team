@@ -23,10 +23,29 @@
 
 ---
 
+### Phase 0: Project Context Loading
+
+- **Input**:
+  - 対象リポジトリの `.dev-agent-team/project-rules.md` / `CLAUDE.md` / `README.md`
+- **Actions**:
+  - Project Rules を読み込み、技術スタック・禁止事項・テスト方法を `.dev-agent-team/runs/email-search/project-context.md` に転記
+  - Project Rules のフロントマターと dev-agent-team 本体の `version.txt` のバージョン照合
+- **Findings**:
+  - Project Rules: 記入済み。バージョン照合 → OK
+- **Output**:
+  - `.dev-agent-team/runs/email-search/project-context.md`
+- **Stop Condition Check**:
+  - Project Rules が確認できない → Pass（確認済み）
+- **Human Decision Required**:
+  - なし
+- **Next**: Phase 1 へ。
+
+---
+
 ### Phase 1: Intake
 
 - **Input**:
-  - `examples/sample-issue.md`（Title / Background / Request / Expected Behavior / Constraints / Acceptance Criteria / Notes）
+  - `examples/sample-issue.md`（`templates/issue-template.md` 構造: 背景・目的 / スコープ / 受け入れ基準 / 該当時のみ必須 / 任意）
 - **Actions**:
   - ProductInterpreter として要件を整理
   - 「やること」「やらないこと」「完了条件」を Issue 本文から抽出
@@ -36,7 +55,7 @@
   - 検索条件の保存・履歴機能は **やらない**（Notes に明記）
   - パフォーマンス要件・実装方式（フロント完結 or API）は未確定
 - **Output**:
-  - 要件整理ドキュメント `.dev-agent-team/requirements/email-search.md`
+  - 要件整理ドキュメント `.dev-agent-team/runs/email-search/requirements.md`
   - 内容:
     - **やること**: 一覧画面にメールアドレス検索フォームを追加 / 部分一致 / 大小区別なし / 0件時の空状態 / 入力クリアで全件復帰
     - **やらないこと**: 名前・電話番号など他フィールド検索 / 検索条件保存 / ページネーション挙動の変更
@@ -76,7 +95,7 @@
   - 類似実装候補: 商品一覧・組織一覧など、別リソースの一覧画面で既に絞り込みフォームが存在する可能性が高い
   - 空状態 UI: 共通コンポーネント（`components/EmptyState.*` のようなもの）が存在する可能性
 - **Output**:
-  - 調査レポート `.dev-agent-team/reports/investigation-email-search.md`
+  - 調査レポート `.dev-agent-team/runs/email-search/investigation.md`
   - 「想定される調査対象」のリストと、確認事項として残った疑問
 - **Risks**:
   - 類似実装が存在しない場合は、命名規則・パターンを Phase 4 で新規に決める必要がある
@@ -110,7 +129,7 @@
   | テスト | あり | 中 | 一覧画面のテストにフィルタ系ケース追加。既存ページネーションとの併用ケース必須 |
 
 - **Output**:
-  - 影響範囲レポート `.dev-agent-team/reports/impact-email-search.md`
+  - 影響範囲レポート `.dev-agent-team/runs/email-search/impact.md`
 - **Risks**:
   - ユーザー件数が想定（1万件以下）を超えた場合の描画パフォーマンス（深刻度: 中）
   - 既存ページネーションとフィルタの併用ロジックの設計ミスによる挙動破綻（深刻度: 中）
@@ -159,7 +178,7 @@
   - **ロールバック容易性**: 低（API スキーマ変更を伴う）
 
 - **Output**:
-  - 実装計画ドキュメント `.dev-agent-team/plans/implementation-plan-email-search.md`
+  - 実装計画ドキュメント `.dev-agent-team/runs/email-search/implementation-plan.md`
   - 採用判断結果（人間決定後に記録）
 - **Risks**:
   - 案Aを採用しても、想定件数を超えた場合は将来 API 方式へ移行する必要が生じる
@@ -196,7 +215,7 @@
   | 6 | ページネーションとの併用挙動を調整 | ページネーション併用テスト |
 
 - **Output**:
-  - 実装ログ `.dev-agent-team/logs/implementation-email-search.md`
+  - 実装ログ `.dev-agent-team/runs/email-search/implementation-log.md`
   - 計画外発見事項（このサンプルでは「なし」と仮定）
 - **Risks**:
   - 既存の検索フォーム共通コンポーネントの仕様確認が必要（名前付きスロット・バリデーション仕様など）
@@ -232,7 +251,7 @@
   | 不正な入力（空白のみ・記号のみ） | 異常系 | 空白のみ・記号のみの入力で例外を投げない | 単体 |
 
 - **Output**:
-  - テスト計画ドキュメント `.dev-agent-team/plans/test-plan-email-search.md`
+  - テスト計画ドキュメント `.dev-agent-team/runs/email-search/test-plan.md`
 - **Risks**:
   - E2E レイヤでの検証要否は既存のテスト運用次第（未確認なら確認事項として残す）
 - **Stop Condition Check**:
@@ -258,8 +277,8 @@
   - セキュリティ: 入力値はクライアントの絞り込みのみで使用、SQLi・XSS・SSRF いずれにも該当しない
   - パフォーマンス: 1万件以下の前提では `useMemo` でメモ化すれば許容範囲
 - **Output**:
-  - レビューノート `.dev-agent-team/reviews/pr-review-email-search.md`
-  - PR 説明文 `.dev-agent-team/reviews/pr-description-email-search.md`（後段の「PR説明文サンプル」参照）
+  - レビューノート `.dev-agent-team/runs/email-search/pr-review.md`
+  - PR 説明文 `.dev-agent-team/runs/email-search/pr-description.md`（後段の「PR説明文サンプル」参照）
 - **Risks**:
   - 既存の検索フォーム共通コンポーネントを使えるか / 別途追加するか の差分量がレビューで論点になる可能性
 - **Stop Condition Check**:
@@ -291,7 +310,7 @@
     - レンダリング時間が現状比 +50% を超えた状態が10分以上継続したら revert
     - 一覧画面でフロントエンド例外率が現状比 +1ポイント超過で10分以上継続したら revert
 - **Output**:
-  - リリースチェックリスト `.dev-agent-team/releases/release-checklist-email-search.md`
+  - リリースチェックリスト `.dev-agent-team/runs/email-search/release-checklist.md`
 - **Risks**:
   - リリース後にユーザー数が想定を超えた場合のパフォーマンス劣化（事前に閾値で監視）
 - **Stop Condition Check**:
@@ -348,25 +367,22 @@ CSチームから「特定ユーザーを探すのに時間がかかる」とい
 
 ## Artifacts 一覧
 
-このワークフロー実行で `.dev-agent-team/` 配下に生成されるファイル一覧（想定）。
+このワークフロー実行で `.dev-agent-team/` 配下に生成されるファイル一覧（想定）。レイアウトは [`docs/adoption-guide.md` §9](../docs/adoption-guide.md) の推奨（Issue / Run 単位）に従う。
 
 ```
 .dev-agent-team/
-├── requirements/
-│   └── email-search.md                     ← Phase 1
-├── reports/
-│   ├── investigation-email-search.md       ← Phase 2
-│   └── impact-email-search.md              ← Phase 3
-├── plans/
-│   ├── implementation-plan-email-search.md ← Phase 4
-│   └── test-plan-email-search.md           ← Phase 6
-├── logs/
-│   └── implementation-email-search.md      ← Phase 5
-├── reviews/
-│   ├── pr-review-email-search.md           ← Phase 7
-│   └── pr-description-email-search.md      ← Phase 7
-└── releases/
-    └── release-checklist-email-search.md   ← Phase 8
+└── runs/
+    └── email-search/
+        ├── project-context.md      ← Phase 0
+        ├── requirements.md         ← Phase 1
+        ├── investigation.md        ← Phase 2
+        ├── impact.md               ← Phase 3
+        ├── implementation-plan.md  ← Phase 4
+        ├── implementation-log.md   ← Phase 5
+        ├── test-plan.md            ← Phase 6
+        ├── pr-review.md            ← Phase 7
+        ├── pr-description.md       ← Phase 7
+        └── release-checklist.md    ← Phase 8
 ```
 
 ---

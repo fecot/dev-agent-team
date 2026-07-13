@@ -1,5 +1,7 @@
 # Skill: 安全なリファクタリング
 
+> 主に Phase 5（Safe Implementation）で使用する。
+
 ## 概要
 
 既存の振る舞いを変えずにコードを改善するスキル。ImplementationDriver エージェントが使用する。

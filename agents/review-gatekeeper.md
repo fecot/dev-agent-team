@@ -44,3 +44,7 @@ Go / No Go / 条件付きGo（{{条件}}）
 - 指摘は具体的に。「要改善」だけで終わらせない
 - 良い点を言語化することも仕事のうち
 - No Goは失敗ではなく、品質への投資
+
+## Stop Condition
+
+workflows/feature-development.md の Phase 7（Review Gate）の Stop Condition を正とする。

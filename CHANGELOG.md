@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **モデル / effort の非対称配分ガイド（§3.6 新設）** — Dynamic Workflows の `agent(prompt, {model, effort})` を使った層別配分の型: **司令塔（分解・判断・指示生成）= セッションモデル継承・high 以上 / 実装（精密指示の機械的適用）= effort:low（Sonnet 5 は medium 安全ライン）/ 検証 = high 以上**。「判断は上流に集約し、実装層から判断を排除する」——キットの核原則「AIは判断材料、判断は人間」をエージェント階層（人間 → 司令塔 AI → 実装 AI）に適用した相似形。effort:low の実装が成立する 5 条件（自己完結指示 / 判断余地ゼロ / 機械的検証の同梱 / 報告義務 / 司令塔の差分レビュー）と、「コスト削減は実装層で行い、司令塔・検証層は削らない」非対称性の根拠を明文化。§4 判断早見表に対応行を追加。`dynamic-workflows/dev-agent-discovery.js` に実装（reader = 低 effort・既定 medium・`args.readEffort` で上書き可 / scope・synthesize = セッション effort 継承）
+
 ### Fixed
 - **`uninstall.sh` の symlink 削除に安全チェックを追加** — readlink でリンク先が `DEV_AGENT_TEAM_ROOT` 配下であることを検証し、配下でなければ「別ツールの symlink のためスキップ」として保護（他ツールの同名 symlink の誤削除を防止）
 - **プレースホルダ記法の統一** — 実行時に決まるパス（`.dev-agent-team/runs/{issue-id}/` 等）は `{issue-id}`（単一波括弧）に統一（`{{}}` はテンプレ利用者が埋める変数、`{}` は実行時の可変値）。`docs/adoption-guide.md` / `skills/legacy-modernization.md` / `templates/project-rules-template.md` に適用

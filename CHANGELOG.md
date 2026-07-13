@@ -14,7 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Fixed** — バグ修正
 - **Security** — セキュリティ関連の修正
 
+> 運用注記: バージョンピン留め（`version.txt` / `dev_agent_team_min_version`）を実効に保つため、機能単位でこまめにリリースを切る。[Unreleased] を溜め込まない。
+
 ## [Unreleased]
+
+## [v0.2.0] - 2026-07-13
 
 ### Added
 - **ネイティブ新機能の取り込み 第2弾（dev-agent-team-evolve ワークフロー由来、v2.1.198〜v2.1.207）** — 全提案を敵対的検証（哲学整合・重複・事実の3レンズ、公式 CHANGELOG / docs 裏取り）を通した上で反映:
@@ -106,5 +110,6 @@ dev-agent-team キットの最初のタグ付きリリースです。`/adopt-pro
 - **`commands/adopt-project.md`**（プレースホルダー） — `/adopt-project` の入口ファイル。`install.sh` の symlink ターゲットとして機能。本実装は次リリース予定
 - **`templates/project-rules-template.md` のバージョンピン留めフィールド** — 冒頭に YAML フロントマター `dev_agent_team_version` / `dev_agent_team_min_version` を追加し、対象プロジェクトの Project Rules がどのバージョンの dev-agent-team で動作することを想定しているかを明示できるように。Phase 0 でのバージョン比較・Stop Condition 発動を見据えた仕組み
 
-[Unreleased]: https://github.com/fecot/dev-agent-team/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/fecot/dev-agent-team/compare/v0.2.0...HEAD
+[v0.2.0]: https://github.com/fecot/dev-agent-team/compare/v0.1.0...v0.2.0
 [v0.1.0]: https://github.com/fecot/dev-agent-team/releases/tag/v0.1.0

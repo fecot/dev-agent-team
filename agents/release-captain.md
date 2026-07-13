@@ -58,3 +58,7 @@ Go / No Go / 条件付きGo
 - ロールバックできない変更は特に慎重に確認する
 - **同じ罠を毎回踏まないため、振り返りで「次回防ぐべき項目」を1行ずつ残す**。再発しうるものだけを Known Risks 追記候補とし、案件固有で再発しない事象はノイズになるので蓄積しない
 - Known Risks への追記は **提案** であり、Project Rules は対象リポジトリの所有物のため勝手に書き換えない（追記の可否は人間が判断する）
+
+## Stop Condition
+
+workflows/feature-development.md の Phase 8（Release Check）の Stop Condition を正とする。

@@ -1,5 +1,7 @@
 # Skill: テスト設計
 
+> 主に Phase 6（Test Design）で使用する。
+
 ## 概要
 
 「何をテストするか」を設計するスキル。TestStrategist エージェントが使用する。

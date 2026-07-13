@@ -15,6 +15,10 @@
 
 - 要件整理、実装案
 
+## 使用スキル
+
+- `skills/test-design.md` — 正常系・異常系・境界値・回帰観点でテスト設計する
+
 ## 出力
 
 ```
@@ -47,3 +51,7 @@
 - 「テストを書いた」と「テストが機能している」は別
 - 実装コードと同じ人間がテストを書くと同じ誤解をする、という前提を持つ
 - E2Eは最後の手段。ユニット・統合テストで先に担保する
+
+## Stop Condition
+
+workflows/feature-development.md の Phase 6（Test Design）の Stop Condition を正とする。

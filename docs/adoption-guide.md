@@ -278,7 +278,7 @@ PR 本文は [`templates/pr-description-template.md`](../templates/pr-descriptio
 
 ### 削除・アーカイブ方針
 
-- **マージ後、不要な実行 Artifacts は削除してよい** — Run が完了し PR がマージされた段階で、`runs/{{issue-id}}/` を削除しても構いません
+- **マージ後、不要な実行 Artifacts は削除してよい** — Run が完了し PR がマージされた段階で、`runs/{issue-id}/` を削除しても構いません
 - **後から参照したいものは `archive/` に移動してもよい** — ただし「後で見るかも」で何でも残すと結局散らかります。本当に参照価値があるものに絞る
 - **長期保存したい判断は archive ではなく PR / Issue / docs に要約して残す** — `archive/` は保険であり、メインの保存場所ではありません
 - **個人情報、機密情報、顧客情報、API キー、ログの生データなどを Artifacts に残さない** — Artifacts は Git 管理しなくてもローカル / バックアップ / IDE のクラウド同期から漏れる可能性があります

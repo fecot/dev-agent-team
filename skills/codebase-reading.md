@@ -1,5 +1,7 @@
 # Skill: コードベース読解
 
+> 主に Phase 2（Discovery）で使用する。
+
 ## 概要
 
 既存コードベースを素早く、正確に読み解くスキル。CodebaseExplorer エージェントが使用する。

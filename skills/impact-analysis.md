@@ -1,5 +1,7 @@
 # Skill: 影響範囲分析
 
+> 主に Phase 3（Impact Analysis）で使用する。
+
 ## 概要
 
 コード変更の波及範囲を特定するスキル。ArchitectureReviewer エージェントが使用する。

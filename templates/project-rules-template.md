@@ -1,6 +1,6 @@
 ---
-dev_agent_team_version: v0.1.0
-dev_agent_team_min_version: v0.1.0
+dev_agent_team_version: v0.2.0
+dev_agent_team_min_version: v0.2.0
 ---
 
 # Project Rules: {{プロジェクト名}}

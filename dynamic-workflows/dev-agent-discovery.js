@@ -15,7 +15,7 @@ export const meta = {
 // args は以下のいずれかを受け取れる:
 //   - 文字列（プレーン）        → 調査の focus として扱う
 //   - 文字列（JSON）            → 一部の起動経路では args が JSON 文字列で渡るためパースする
-//   - { focus, paths, maxFiles } → focus / 明示の候補パス配列 / 読み込み上限
+//   - { focus, paths, maxFiles, readEffort } → focus / 明示の候補パス配列 / 読み込み上限 / reader の effort
 //   - 配列                      → paths として扱う
 function normalizeArgs(a) {
   if (a == null) return {}
@@ -38,7 +38,14 @@ const input = normalizeArgs(args)
 const focus = input.focus || '変更対象になりうる箇所と既存パターンの把握'
 const seedPaths = Array.isArray(input.paths) ? input.paths : []
 const maxFiles = Number.isInteger(input.maxFiles) ? input.maxFiles : 24
-log(`WF_DIAG: args type=${typeof args} / focus="${focus}" / seedPaths=${seedPaths.length} / maxFiles=${maxFiles}`)
+// モデル / effort の非対称配分（docs/native-tooling-integration.md §3.6）:
+// reader は「1 ファイルを読んでスキーマに沿って抽出する」機械的タスクなので低 effort、
+// scope / synthesize は判断層なのでセッションの effort を継承する。
+// 既定は medium（抽出にも軽い判断が混ざるため）。純機械的なら args.readEffort='low' に下げられる。
+const readEffort = typeof input.readEffort === 'string' ? input.readEffort : 'medium'
+log(
+  `WF_DIAG: args type=${typeof args} / focus="${focus}" / seedPaths=${seedPaths.length} / maxFiles=${maxFiles} / readEffort=${readEffort}`
+)
 
 // ---- スキーマ定義 ----
 const SCOPE_SCHEMA = {
@@ -150,7 +157,7 @@ const readResults = await pipeline(files, (path) =>
   agent(
     `次のファイルを読み、「${focus}」の観点で調査してほしい: ${path}\n` +
       `役割 / 今回触る可能性 / 既存パターン・命名規則・エラーハンドリング方針 / 類似実装 / 主要な依存 を抽出する。`,
-    { label: `read:${path}`, phase: 'Read', schema: FILE_FINDING_SCHEMA }
+    { label: `read:${path}`, phase: 'Read', schema: FILE_FINDING_SCHEMA, effort: readEffort }
   ).catch(() => null)
 )
 const findings = readResults.filter(Boolean)

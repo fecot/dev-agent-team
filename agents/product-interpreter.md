@@ -70,7 +70,7 @@ UI / 見た目に関する依頼で **形容詞による曖昧な指示** が来
 ### 逆質問テンプレ
 
 ```
-{形容詞} の対象を {skills/browser-verification.md} で実測したところ:
+{形容詞} の対象を実測したところ（source 側は skills/migration-spec-capture.md、target 側は skills/browser-verification.md で計測）:
 - {source}: {x} px / {hex} / {value}
 - {target}: {y} px / {hex} / {value}
 
@@ -79,6 +79,8 @@ UI / 見た目に関する依頼で **形容詞による曖昧な指示** が来
 [2] {source} より さらに{大きく/小さく/濃く/...} する → 目標値を指定してください
 [3] 既存値（{target}）のままにする
 ```
+
+> 計測スキルの使い分け: source（移植元）の計測は `skills/migration-spec-capture.md`、target（実装先）の検証は `skills/browser-verification.md`。
 
 ### 範囲指示の扱い
 

@@ -45,6 +45,8 @@
 
 タグのないものは原則 **〔人間判断〕寄り** として扱い、自動化前に人間に確認する。
 
+この二分は、公式の Fable 5 プロンプティングガイドが推奨するチェックポイントパターン——「**破壊的・不可逆な操作 / 真のスコープ変更 / 本人にしか出せない入力** のときだけユーザーで停止する」——と一致する。〔人間判断〕はこの停止すべき 3 類型を Phase ごとに具体化したもの（[`docs/native-tooling-integration.md`](../docs/native-tooling-integration.md) §7.1 参照）。
+
 〔機械検証可〕タグの Stop Condition は hooks で機械的に強制できる（[`docs/native-tooling-integration.md`](../docs/native-tooling-integration.md) §2.7 参照）。**〔人間判断〕は hooks 化しない**（自動判定 = 人間ゲートの代行になるため）。
 
 ### 前提: Project Context Loading
@@ -286,6 +288,7 @@
 - 計画から外れる変更を発見した場合、いったん停止して人間に確認する
 - リファクタリングと機能追加を混ぜない
 - （任意）テスト緑化・lint 解消・typecheck 0 など **機械的に収束させたい区間** は `/goal` で自動ループできる。終了条件に「かつ 未解決の Human Decision Point がない」を必ず含め、計画外変更の判断は人間に返す（[`docs/native-tooling-integration.md`](../docs/native-tooling-integration.md)）
+- （任意）長時間の実装では、**一定間隔で新しいコンテキストの検証サブエージェントに、実装計画・受け入れ基準との突き合わせ** をさせる（独立した検証は自己批評より優れる — 同 §7.3 interval 検証）
 
 #### Output
 - 実装済みコード

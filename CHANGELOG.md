@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Fable 5 世代のプロンプト設計ガイド（§7 新設、旧 §7 Follow-up は §8 に繰り下げ）** — 公式 [Fable 5 プロンプティングガイド](https://platform.claude.com/docs/ja/build-with-claude/prompt-engineering/prompting-claude-fable-5) とキットの整合を整理: (1) **公式パターンがキットの型を裏打ち**（チェックポイント 3 類型「破壊的・不可逆 / 真のスコープ変更 / 本人にしか出せない入力」= Human Decision Point の定義と一致 / 独立検証サブエージェント > 自己批評 = Phase 7 多層レビューの根拠 / one-lesson-per-file メモリ = Known Risks 振り返り運用）、(2) **指示粒度の世代適合** — ゲート（Stop Condition / HDP / 禁止事項）は列挙を維持、行動手順のマイクロ指示は「原則 + why」への簡潔化候補とする線引き（公式「従来モデル向けスキルは Fable 5 には細かすぎ、品質を落としうる」）、(3) **委任・長時間実行パターン** — 証拠つき報告（ツール結果と突き合わせ）と why の伝達を §3.6 成立条件 1 / 4 に接続、interval 検証を Phase 5 に追記、長寿命サブエージェント + 非同期通信、(4) **禁止事項** — 内部推論をエコーさせる指示（`reasoning_extraction` refusal を誘発。キット既存文書は監査済みで該当なし）。`CONCEPT.md` に公式裏付けの段落、`workflows/feature-development.md` タグ付け規約にチェックポイント 3 類型との一致を追記
 - **モデル / effort の非対称配分ガイド（§3.6 新設）** — Dynamic Workflows の `agent(prompt, {model, effort})` を使った層別配分の型: **司令塔（分解・判断・指示生成）= セッションモデル継承・high 以上 / 実装（精密指示の機械的適用）= effort:low（Sonnet 5 は medium 安全ライン）/ 検証 = high 以上**。「判断は上流に集約し、実装層から判断を排除する」——キットの核原則「AIは判断材料、判断は人間」をエージェント階層（人間 → 司令塔 AI → 実装 AI）に適用した相似形。effort:low の実装が成立する 5 条件（自己完結指示 / 判断余地ゼロ / 機械的検証の同梱 / 報告義務 / 司令塔の差分レビュー）と、「コスト削減は実装層で行い、司令塔・検証層は削らない」非対称性の根拠を明文化。§4 判断早見表に対応行を追加。`dynamic-workflows/dev-agent-discovery.js` に実装（reader = 低 effort・既定 medium・`args.readEffort` で上書き可 / scope・synthesize = セッション effort 継承）
 
 ### Fixed

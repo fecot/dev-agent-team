@@ -57,6 +57,8 @@ Claude Code 本体は `/goal`（自律ループ）や Dynamic Workflows（並列
 
 なお、人間ゲートの非代行性は文書上の約束に留まらず、ランタイム側でも保証されつつある（エージェント間メッセージでは承認が成立しない、承認ダイアログは既定で人間を待ち続ける、等）。型とエンジンの安全機構は二重防御の関係にある。詳細は [`docs/native-tooling-integration.md`](docs/native-tooling-integration.md) § 5.1。
 
+プロンプト設計の面でも同じ収斂が起きている。公式の Fable 5 プロンプティングガイドが推奨する「破壊的・不可逆な操作 / 真のスコープ変更 / 本人にしか出せない入力のときだけ止まる」というチェックポイントパターンは、Human Decision Point の定義と一致する。「新しいコンテキストを持つ独立した検証サブエージェントは自己批評より優れる」という推奨は、本キットの多層レビュー構造の根拠になる。型が言語化してきた線引きは、モデル世代が上がるほど公式のプロンプト設計側から追認されつつある。詳細は [`docs/native-tooling-integration.md`](docs/native-tooling-integration.md) § 7。
+
 ## エージェンシー・ラダーのどこで効くか
 
 Claude 系の機能は「AI がどこまで先に動くか（エージェンシー）」で 3 段に並べられる——**Tier 1: 人間起点**（Projects / Artifacts、便利になるが進め方は変わらない）、**Tier 2: 継続学習**（Memory / CLAUDE.md、AI が文脈を覚える）、**Tier 3: AI 起点**（`/goal` / Dynamic Workflows / Scheduled Tasks / Agent Teams（実験的機能）、AI が先に動き人間が確認する）。上の段ほど強力だが、その分「AI が確認ゲートまで飛び越える」リスクも上がる。Agent Teams のようにリード AI がチームメイト AI の計画を承認する仕組みでも、**リードの承認は人間の承認ではない**。

@@ -45,7 +45,7 @@
 - **タスク種別**（推奨明示）: `通常` / `Migration` / `UI Replica` / `Hotfix` のいずれか。詳細は [`workflows/feature-development.md` § 6 タスク種別サブフロー](../workflows/feature-development.md#6-タスク種別サブフロー) を参照
   - **自動判定はしない**（誤判定で誤サブフローが走るリスクを避けるため、人間が宣言する）
   - 宣言がない場合は `通常` として扱う
-  - `Migration` / `UI Replica` 宣言時は Phase 0 / 1 / 2 / 4 / 5 に追加チェックリストが発火（前提: Playwright MCP 利用可能）
+  - `Migration` / `UI Replica` 宣言時は Phase 0 / 1 / 2 / 4 / 5 に追加チェックリストが発火（前提: Playwright MCP 利用可能）。**複数単位に分割する移行では、最初の 1 単位に着手する前に無主物リスト**（どの単位にも属さない関心事の列挙と担当割当）**を作る**（workflow §6.1「単位分割の設計」）
   - `Hotfix` 宣言時は Phase 1〜4 を圧縮、Phase 7 / 8 を通常以上に厳格化
 - **Issue 本文**: タイトルと本文（GitHub Issue / Jira / Slack 抜粋など）
 - **目的**: なぜこの変更が必要か（背景・期待する効果）

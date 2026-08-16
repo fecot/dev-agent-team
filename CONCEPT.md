@@ -61,6 +61,6 @@ Claude Code 本体は `/goal`（自律ループ）や Dynamic Workflows（並列
 
 ## エージェンシー・ラダーのどこで効くか
 
-Claude 系の機能は「AI がどこまで先に動くか（エージェンシー）」で 3 段に並べられる——**Tier 1: 人間起点**（Projects / Artifacts、便利になるが進め方は変わらない）、**Tier 2: 継続学習**（Memory / CLAUDE.md、AI が文脈を覚える）、**Tier 3: AI 起点**（`/goal` / Dynamic Workflows / Scheduled Tasks / Agent Teams（実験的機能）、AI が先に動き人間が確認する）。上の段ほど強力だが、その分「AI が確認ゲートまで飛び越える」リスクも上がる。Agent Teams のようにリード AI がチームメイト AI の計画を承認する仕組みでも、**リードの承認は人間の承認ではない**。
+Claude 系の機能は「AI がどこまで先に動くか（エージェンシー）」で 3 段に並べられる——**Tier 1: 人間起点**（Projects / Artifacts、便利になるが進め方は変わらない）、**Tier 2: 継続学習**（Memory / CLAUDE.md、AI が文脈を覚える）、**Tier 3: AI 起点**（`/goal` / Dynamic Workflows / Scheduled Tasks / Agent Teams（実験的機能）、AI が先に動き人間が確認する）。上の段ほど強力だが、その分「AI が確認ゲートまで飛び越える」リスクも上がる。**リスクは飛び越えるだけではない**——ゲートの手前で止まらなくなる事故も同じ段で起きる。人間の応答待ち（マージ待ち・承認待ち）を AI に監視させると、人間が動くまで状態が変わらないため終了条件が存在せず、ループが終わらない。人間ゲートは「越えさせない」だけでなく「**待たせてもいけない**」。Agent Teams のようにリード AI がチームメイト AI の計画を承認する仕組みでも、**リードの承認は人間の承認ではない**。
 
 dev-agent-team が本領を発揮するのは Tier 3 だ。エンジンの勢いに **「ここは AI が先に動いてよい／ここは必ず人間が確認する」の線引き** を与える。全機能を覚える必要はない——いまの自分の段を見極め、Tier 2 で文脈を固めてから Tier 3 のエンジン併用へ 1 段ずつ上がればよい。線引きの実体は Human Decision Point であり、それこそが本キットの存在意義だ。詳細は [`docs/native-tooling-integration.md`](docs/native-tooling-integration.md) § 1.1。

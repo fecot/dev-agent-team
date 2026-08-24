@@ -378,6 +378,8 @@ LLM が依存ライブラリから関連ツールを推測する際は、**以�
 
 各セクションが選ばれた場合、`templates/project-rules-template.md` の **詳細項目** を追加質問する（例: Test Rules を選んだら「カバレッジ目標 / モック方針 / テスト配置 ...」を順に聞く）。選ばれなかったセクションは「未確定（要確認）」のまま。
 
+**Decision Log は導入時には質問しない**（新規導入では空で始まる）。Phase 8 の振り返りで抽出した「判断 / 理由 / 再利用条件」を人間の承認つきに 1 行ずつ足していくセクションなので、初期状態は空のままでよい。
+
 ### 段階3: 該当時のみ（1項目）
 
 段階1の最後のレガシー判定で **Yes** と回答された場合のみ:
@@ -459,9 +461,11 @@ LLM が依存ライブラリから関連ツールを推測する際は、**以�
  [13] Security / Privacy Rules
  [14] PR Rules
  [15] Release Rules
- [16] Do Not
- [17] Human Approval Required
- [18] Known Risks
+ [16] Execution Engine 方針
+ [17] Do Not
+ [18] Human Approval Required
+ [19] Known Risks
+ [20] Decision Log
   [a] すべて確認
   [v] バージョンピン留めのみ更新
   [q] 終了

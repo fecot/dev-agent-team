@@ -246,6 +246,7 @@ Dynamic Workflows の `agent(prompt, { model, effort })` は、エージェン�
 - マージ可否（Phase 7）
 - リリース可否 / ロールバック判断（Phase 8）
 - Known Risks 追記（Phase 8）
+- Decision Log 追記（Phase 8。案件横断の原則へ引き上げるかを含む）
 
 > AIは「判断材料」を出す。「判断」は人間がする。エンジンを足しても、この原則は変わりません。
 
@@ -409,7 +410,7 @@ Anthropic 公式の [Claude Fable 5 プロンプティングガイド](https://p
 |---|---|
 | チェックポイント: "Pause for the user only when the work genuinely requires them: **a destructive or irreversible action, a real scope change, or input that only they can provide**" | **Human Decision Point の定義と一致**（§5）。破壊的・不可逆 / 真のスコープ変更 / 本人にしか出せない入力 — キットが「人間ゲート」として言語化してきた線引きそのもの |
 | 検証: 「新しいコンテキストを持つ**独立した検証サブエージェントは、自己批評よりも優れた結果を出す**」 | Phase 7 の多層レビュー（セルフ → reviewer → 独立レビュー）の設計根拠。§3.6 で検証層を高 effort の独立エージェントに置く配分とも整合 |
-| メモリ: "Store one lesson per file... **Don't save what the repo or chat history already records**" | Project Rules の **Known Risks を振り返りで育てる運用**（Phase 8。人間承認つきで 1 行ずつ追記 / 案件固有で再発しない事象は書かない） |
+| メモリ: "Store one lesson per file... **Don't save what the repo or chat history already records**" | Project Rules の **Known Risks / Decision Log を振り返りで育てる運用**（Phase 8。人間承認つきで 1 行ずつ追記 / 案件固有で再発しない事象・一度きりの判断は書かない） |
 | 境界: 「問題の説明・質問・思考の言語化に対しては **assessment を返して止まる**（頼まれるまで修正しない）」 | 「AIは判断材料、判断は人間」の行動形。判断材料を出した時点でいったん人間に返す |
 | effort: high 既定 / Fable 5 の low は旧世代の xhigh を上回りうる / 日常作業は下げる | **§3.6 の非対称配分と整合**（追加変更なし） |
 

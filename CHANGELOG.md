@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.3.0] - 2026-08-24
+
 ### Added
 - **型の二層と取り込み基準 — 価値の重心を「現場の台帳」へ寄せる再定位** (キット自身の多視点再評価由来: 廃止論 steelman / 擁護論 / 重複マトリクス / CHANGELOG 実績監査の 4 並列分析) — 棚卸しの結果、ネイティブ機能に丸ごと置き換えられた構成要素は 0 件で、多くは「ネイティブ機能を包んで適用範囲とガードレールを付加する」積層構造だった一方、(a) 汎用的な行動指針はモデル世代とともにデフォルト挙動へ吸収されていくこと、(b) 維持コストの主因がネイティブ機能の全量追随にあることが確認された。対応 3 点: (1) **`CONCEPT.md`「型とは何か」に二層論を追加** — 「汎用の賢さの明文化」（吸収されていく。原則 + why へ痩せさせ続ける）と「現場の台帳」（Known Risks / Decision Log / Migration チェックリスト。使うほど太り、吸収されない）を区別し、投資を後者に寄せる。`README.md` の「ネイティブ機能との関係」にも積層と重心移動を追記、(2) **ネイティブ機能の取り込み基準を新設（docs §1.2）** — 取り込むのは「人間ゲートの位置または強度が変わる変更」のみ。性能改善・UI 変更・ゲートに触れない新機能は意図的に追随しない。バージョンピンの新規追加も同基準（§7.3「発火点を増やさない」の自己適用として、維持コストに構造的上限を設ける）、(3) **§8.2 の粒度基準による agents/ 7 本・skills/ 8 本の監査を完了** — いずれも既に「原則 + why」粒度で大きな削減対象なし、と記録（定期的な全量再監査はしない）
 - **Decision Log — 人間が下した判断を残して再利用する運用（`templates/project-rules-template.md` 新セクション）** — 外部発表「AIに持続力を与える 判断の長期記憶設計」（Eisuke Kawano 氏）の問題提起を一般化して取り込み。キットは Human Decision Point で **人間に判断させる型** は持っていたが、そこで出た答えの置き場が無く、実行ごとの Artifacts と一緒に消えていた（`docs/adoption-guide.md` §9 は「長期的に残したい判断は Wiki 等へ」としていたが、Phase 0 の読み込み対象外のため次の案件で再利用されない）。Known Risks と同じ「振り返りで育てる / 人間承認つき / ノイズを溜めない」運用を **判断** に拡張する: (1) Project Rules に **Decision Log**（判断 / 理由 / 再利用条件の 3 列）を新設、(2) **Phase 8 の振り返りに判断の抽出を追加** — 「次も同じ問いが来る」判断のみを対象とし、理由を必須にする（判断だけを残すと前提が変わったときに見直せず、ただの縛りになる）、(3) **Phase 0 で Decision Log を読む** — 関係する記録があればその前提から始め、同じ問いを人間に出し直さない。記録どうしの衝突 / 前提の不一致は AI が採用を決めず人間に戻す（Stop Condition 1 本を追加）、(4) **再利用条件による横断判定** — 「プロジェクトを問わず」の行は案件横断の原則の候補として人間に示す（引き上げ可否は人間が判断。キットの所有範囲は対象リポジトリまでとし、横断の記録置き場そのものは規定しない）。Human Decision Point に「Decision Log 追記」1 行、`agents/release-captain.md` の責務 / 出力テンプレ / 行動原則、`commands/run-feature-workflow.md` Phase 0 の読み込みリスト、`docs/native-tooling-integration.md` §5（エンジンに委譲しないもの）・§8.1、`docs/adoption-guide.md` §7・§9、`commands/adopt-project.md` の更新メニューに反映。**取り込まなかった項目**: 発表側の `vault/` ディレクトリ構造（キットは `.dev-agent-team/` + Project Rules を既に持ち、並行構造は衝突する）、判断記録の 3 つの探索手段（外部ツール依存。単一リポジトリ規模では参照をたどれば足りる）、最終 UI/UX の手触り確認（視覚仕様レビューゲートと `skills/browser-verification.md` で既出）
@@ -136,6 +138,7 @@ dev-agent-team キットの最初のタグ付きリリースです。`/adopt-pro
 - **`commands/adopt-project.md`**（プレースホルダー） — `/adopt-project` の入口ファイル。`install.sh` の symlink ターゲットとして機能。本実装は次リリース予定
 - **`templates/project-rules-template.md` のバージョンピン留めフィールド** — 冒頭に YAML フロントマター `dev_agent_team_version` / `dev_agent_team_min_version` を追加し、対象プロジェクトの Project Rules がどのバージョンの dev-agent-team で動作することを想定しているかを明示できるように。Phase 0 でのバージョン比較・Stop Condition 発動を見据えた仕組み
 
-[Unreleased]: https://github.com/fecot/dev-agent-team/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/fecot/dev-agent-team/compare/v0.3.0...HEAD
+[v0.3.0]: https://github.com/fecot/dev-agent-team/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/fecot/dev-agent-team/compare/v0.1.0...v0.2.0
 [v0.1.0]: https://github.com/fecot/dev-agent-team/releases/tag/v0.1.0

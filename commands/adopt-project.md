@@ -372,7 +372,7 @@ LLM が依存ライブラリから関連ツールを推測する際は、**以�
 
 各セクションが選ばれた場合、`templates/project-rules-template.md` の **詳細項目** を追加質問する（例: Test Rules を選んだら「カバレッジ目標 / モック方針 / テスト配置 ...」を順に聞く）。選ばれなかったセクションは「未確定（要確認）」のまま。
 
-**Decision Log は導入時には質問しない**（新規導入では空で始まる）。Phase 8 の振り返りで抽出した「判断 / 理由 / 再利用条件」を人間の承認つきに 1 行ずつ足していくセクションなので、初期状態は空のままでよい。
+**Decision Log と Environment Notes は導入時には質問しない**（新規導入では空で始まる）。Decision Log は Phase 8 の振り返りで抽出した「判断 / 理由 / 再利用条件」を、Environment Notes は実際にブロックに当たった環境制約を、いずれも人間の承認つきに 1 行ずつ足していくセクションなので、初期状態は空のままでよい。
 
 ### 段階3: 該当時のみ（1項目）
 
@@ -443,23 +443,24 @@ LLM が依存ライブラリから関連ツールを推測する際は、**以�
   [1] Project Overview
   [2] Tech Stack
   [3] Runtime Commands
-  [4] Architecture Rules
-  [5] Legacy Modernization Rules
-  [6] Directory Rules
-  [7] Coding Rules
-  [8] Database Rules
-  [9] API Rules
- [10] Frontend Rules
- [11] Backend Rules
- [12] Test Rules
- [13] Security / Privacy Rules
- [14] PR Rules
- [15] Release Rules
- [16] Execution Engine 方針
- [17] Do Not
- [18] Human Approval Required
- [19] Known Risks
- [20] Decision Log
+  [4] Environment Notes
+  [5] Architecture Rules
+  [6] Legacy Modernization Rules
+  [7] Directory Rules
+  [8] Coding Rules
+  [9] Database Rules
+ [10] API Rules
+ [11] Frontend Rules
+ [12] Backend Rules
+ [13] Test Rules
+ [14] Security / Privacy Rules
+ [15] PR Rules
+ [16] Release Rules
+ [17] Execution Engine 方針
+ [18] Do Not
+ [19] Human Approval Required
+ [20] Known Risks
+ [21] Decision Log
   [a] すべて確認
   [v] バージョンピン留めのみ更新
   [q] 終了

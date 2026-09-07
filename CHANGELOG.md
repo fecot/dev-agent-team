@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **実運用 Insights レポート由来の 5 点取り込み** (キット外の実務セッション 28 本の Claude Code Insights レポート由来。「型なしで運用すると何が起きるか」の実測データを一般化) — (1) **リモート状態の信頼境界** — 「コミットまではローカルで自由、リモートを変える操作（push / PR 作成・更新 / Secret 登録 / タグ作成）から先は人間ゲート」を明文化。**最初の push の承認は、その後の全 push の承認ではない**（承認済み PR への無断追加 push で PR 閉鎖 + リモートブランチ削除の後始末が発生した実例から）。`workflows/feature-development.md` Phase 5 / 7 Stop Condition + HDP 表 1 行、`docs/native-tooling-integration.md` §5、`templates/project-rules-template.md` Human Approval Required、`commands/run-feature-workflow.md` Execution Rules に反映、(2) **質問には回答のみ返す** — 「〜すればいいだけだよね？」への応答としてフル実装 + リソース登録が返り、ブランチ廃棄になった実例から。§8.1 の assessment 境界を Execution Rules の実行ルールに昇格、(3) **分析成果物の証拠規律** — `templates/investigation-report-template.md` に「データソースと母数」表を新設し、推論のみの主張には「未検証」と明記する運用を追加（推論ベースの issue 分類が別エージェントのレビューで母数違いごと覆った実例から。§8.3 証拠つき報告のテンプレへの落とし込み）、(4) **条件式の「等価な」書き換えは実データの件数一致で検証**（`skills/safe-refactoring.md` 原則 5）— SQL 単純化がレガシーステータス値の行を静かに落としかけた実例から。件数が合わない単純化はリファクタリングではなく仕様変更、(5) **Environment Notes**（`templates/project-rules-template.md` 新小節）— ホスト制約 / 権限的に触れないパス / 外部連携の認証状態を「タスクごとの再発見ではなく安定した事実」として台帳化し、Phase 0 で読み込む。Phase 1 に「成果物の届け先への到達可否を着手前に確認事項へ含める」を追加（環境・権限ブロックが完成後の最終盤に発覚するパターンの前倒し）。Known Risks / Decision Log と同じ蓄積運用。**取り込まなかった項目**: persona 並列レビューによる脆弱性発見・独立エージェントによる分析誤り検出（Phase 7 多層レビューと §8.1「独立検証 > 自己批評」で既出）、レポート提案の CLAUDE.md 追記・スラッシュコマンド・hooks 設定例（利用者の実務リポジトリ固有。対象リポジトリ側の Project Rules に属する）、成果物の言語ルール・外部サービス MCP 連携提案（ユーザー固有・キット射程外）
+
 ## [v0.3.0] - 2026-08-24
 
 ### Added

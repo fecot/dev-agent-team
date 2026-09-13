@@ -143,6 +143,7 @@ auto mode 中は、明示指示がない限り **破壊的コマンド（`git re
 | テストが緑化していない（0 failures 未達） | Stop hook（prompt-based）でテスト結果を判定し、未達なら停止を差し戻す |
 | lint / typecheck が 0 でない | Stop hook（command）で lint / typecheck を実行し、非 0 終了で差し戻す |
 | Phase 単位タスクのチェックリスト未充足 | TaskCompleted hook + exit 2 で完了をブロック |
+| main / master 上でコミットしようとしている | PreToolUse hook（Bash）で `git commit` 時に `git branch --show-current` を判定し、main / master なら exit 2 で差し戻す |
 
 - **〔人間判断〕タグの Stop Condition は hooks 化禁止**。自動判定に置き換えること自体が人間ゲートの代行になるため、受入基準の承認・採用案の意思決定・マージ / リリース可否などは hook にしません（§5 の人間判断のコア）。
 - フィードバック文言は **具体的な合格条件** で書く（「テストを直す」ではなく「`npm test` の全出力に `0 failures` が表示されるまで停止しない」）。

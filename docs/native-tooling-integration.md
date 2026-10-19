@@ -262,6 +262,7 @@ Dynamic Workflows の `agent(prompt, { model, effort })` は、エージェン�
 - 視覚仕様の合意（Phase 4 → 5）
 - DB 変更 / 権限変更の承認（Phase 3 / 4 / 8）
 - リモート状態の変更（Phase 5〜8。push / PR 作成・更新 / Secret 登録 / タグ作成 — コミットまではローカルで自由、リモートを変える操作から先は人間ゲート。①の実装は §5.2 の `Bash(git push *)` deny）
+- 共有環境での実行（Phase 5〜8。dev / stg / 本番へのコマンド実行は、コマンド・対象環境・パラメータ・書き込まれるもの（コードで確認）を提示してから。フラグ名は保証ではない）
 - マージ可否（Phase 7）
 - リリース可否 / ロールバック判断（Phase 8）
 - Known Risks 追記（Phase 8）

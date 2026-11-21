@@ -144,6 +144,21 @@ auto mode 中は、明示指示がない限り **破壊的コマンド（`git re
 | lint / typecheck が 0 でない | Stop hook（command）で lint / typecheck を実行し、非 0 終了で差し戻す |
 | Phase 単位タスクのチェックリスト未充足 | TaskCompleted hook + exit 2 で完了をブロック |
 | main / master 上でコミットしようとしている | PreToolUse hook（Bash）で `git commit` 時に `git branch --show-current` を判定し、main / master なら exit 2 で差し戻す |
+| 上流より遅れている / 未コミット変更がある / リモートが未設定のまま、ブランチ切り替え・マージ・push に進もうとしている | PreToolUse hook（Bash）で `git switch` / `checkout` / `merge` / `push` 時に `git fetch` 後の状態を判定し、該当すれば exit 2 で差し戻す。操作ごとの判定対象は下記 |
+
+- **git 状態確認 hook の判定対象**（操作ごとに、その操作で問題になる条件だけを見る）:
+
+  | 操作 | 判定する条件 |
+  |---|---|
+  | push | 現在のブランチの上流からの遅れ（`git rev-list --count HEAD..@{u}`）/ リモートの有無（`git remote`）。未コミット変更は見ない（push はコミット済みのものしか送らない） |
+  | merge | 未コミット変更 / **マージ元** の上流からの遅れ（`git merge main` ならローカル `main` について `main..main@{u}`） |
+  | 既存ブランチへの切り替え | 未コミット変更 / **切り替え先** の上流からの遅れ（`<target>..<target>@{u}`） |
+
+  - upstream が未設定（`git rev-parse @{u}` が失敗する。初回 push 前の作業ブランチなど）なら、遅れの判定はスキップする。「リモート未設定」と「upstream 未設定」は別の状態
+  - 未コミット変更は `git status --porcelain --untracked-files=no` で見る（Git 管理しない Artifacts 等の untracked ファイルで常に差し戻されるのを避ける）
+  - 新しいブランチを切る操作（`switch -c` / `checkout -b`）と、ファイルを戻す `checkout -- <path>` は対象外にする。「main 上で作業してしまった」ときの正しい回復手順（変更を持ったまま新しいブランチを切る）を塞がない
+  - `origin/<base>` から新しいブランチを切るときは `--no-track` を添える。付けないと upstream が `origin/<base>` になり、base が進むたびに push が「遅れ」として差し戻される
+  - この hook は **判定だけ** を機械化する。解消方法（上流へ揃える・退避する等）は人間が選ぶ。hook のメッセージで `reset` / `stash` を指示しない
 
 - **〔人間判断〕タグの Stop Condition は hooks 化禁止**。自動判定に置き換えること自体が人間ゲートの代行になるため、受入基準の承認・採用案の意思決定・マージ / リリース可否などは hook にしません（§5 の人間判断のコア）。
 - フィードバック文言は **具体的な合格条件** で書く（「テストを直す」ではなく「`npm test` の全出力に `0 failures` が表示されるまで停止しない」）。

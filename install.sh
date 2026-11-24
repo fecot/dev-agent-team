@@ -74,6 +74,7 @@ DEV_AGENT_TEAM_ROOT="$(cd "${DEV_AGENT_TEAM_ROOT}" && pwd -P)"
 # 退避ファイルの接尾辞
 BACKUP_SUFFIX=".bak.$(date +%Y%m%d-%H%M%S)"
 BACKED_UP=0
+BACKUP_FILES=()
 
 # symlink のリンク先を物理パスに解決する（リンク先のディレクトリが無ければそのまま返す）
 resolve_link() {
@@ -117,6 +118,7 @@ link_one() {
         warn "${label} 別ツールの symlink を退避: ${target} -> ${dest}"
         mv "${target}" "${dest}"
         BACKED_UP=$((BACKED_UP + 1))
+        BACKUP_FILES+=("${dest}")
         ;;
     esac
   elif [ -e "${target}" ]; then
@@ -124,6 +126,7 @@ link_one() {
     warn "${label} 既存の実ファイルを退避: ${target} -> ${dest}"
     mv "${target}" "${dest}"
     BACKED_UP=$((BACKED_UP + 1))
+    BACKUP_FILES+=("${dest}")
   fi
 
   ln -sfn "${source}" "${target}"
@@ -215,7 +218,10 @@ if [ "${#WORKFLOWS[@]}" -gt 0 ]; then
   echo ""
 fi
 if [ "${BACKED_UP}" -gt 0 ]; then
-  warn "既存ファイル ${BACKED_UP} 件を ${BACKUP_SUFFIX} 付きで退避しました（不要なら手動で削除）。"
+  warn "既存ファイル ${BACKED_UP} 件を退避しました（不要なら手動で削除）:"
+  for f in "${BACKUP_FILES[@]}"; do
+    warn "  ${f}"
+  done
   echo ""
 fi
 echo "次の手順:"

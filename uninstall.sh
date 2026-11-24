@@ -29,7 +29,7 @@ CLAUDE_WORKFLOWS_DIR="${CLAUDE_WORKFLOWS_DIR:-${HOME}/.claude/workflows}"
 # install.sh と対称: グローバル配置されたコマンド・Dynamic Workflow の一覧（manifest.sh に一本化）
 if [ ! -f "${DEV_AGENT_TEAM_ROOT}/manifest.sh" ]; then
   echo "[ERROR] manifest.sh が見つかりません: ${DEV_AGENT_TEAM_ROOT}/manifest.sh" >&2
-  echo "[ERROR] クローンを削除済みなら、~/.claude/commands/ と ~/.claude/workflows/ の dev-agent-team へのリンクを手動で削除してください。" >&2
+  echo "[ERROR] クローンを削除済みなら、${CLAUDE_COMMANDS_DIR}/ と ${CLAUDE_WORKFLOWS_DIR}/ の dev-agent-team へのリンクを手動で削除してください。" >&2
   exit 1
 fi
 # shellcheck source=manifest.sh
@@ -54,14 +54,18 @@ resolve_link() {
 }
 
 # install.sh が退避した利用者のファイルを案内する（自動では戻さない）
+# 退避名は日時順に並ぶので、最初の 1 件が最初の install より前からあった元ファイル
 hint_backups() {
-  local target="$1" found
+  local target="$1" found first=""
   for found in "${target}".bak.*; do
     if [ -e "${found}" ] || [ -L "${found}" ]; then
-      warn "        install 時に退避したファイルがあります: ${found}"
-      warn "        元に戻すなら: mv \"${found}\" \"${target}\""
+      [ -z "${first}" ] && first="${found}"
+      warn "        install 時に退避したファイル: ${found}"
     fi
   done
+  if [ -n "${first}" ]; then
+    warn "        最も古いものが導入前の元ファイルです。戻すなら: mv \"${first}\" \"${target}\""
+  fi
 }
 
 # ---- カラー出力 ----

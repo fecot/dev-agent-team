@@ -216,7 +216,7 @@ src/
   - **人間の応答待ちの自動監視は禁止**（PR のマージ待ち / 承認待ちを定期チェックするルーチンを作らない。終了条件が存在しないため）
   - **暴走の確認手順**: 依頼を投げていない日にトークンが減っていたら、ルーチン一覧を「完了済みを含める」で確認する
 - **人間ゲートの扱い**: 〔事前承認〕（`workflows/feature-development.md` §3.1）はエンジンに委譲せず必ず人間が判断する。ゲートに達したエンジンは **待機せず終了** する
-- **HDP の permissions 固定**: {{deny / ask ルールとして settings.json に固定した境界の一覧（例: force push・リモートブランチ削除の deny、`gh pr merge` の ask。main への push は引数パターンでは塞げないので、リモートの branch protection で守る） / 該当なし}}（会話で述べた境界は compaction で失われうるため、恒久保証は deny ルール。deny / ask は project 側 `.claude/settings.json` でも workspace trust なしで適用される）
+- **HDP の permissions 固定**: {{deny / ask ルールとして settings.json に固定した境界の一覧（例: `gh pr merge` / `gh api` / 外部投稿の ask、force push・ブランチ削除の deny（補助）。main・保護ブランチへの push と force push の正はリモートの branch protection、それ以外のブランチの force push・削除の正は PreToolUse hook — docs §5.2） / 該当なし}}（会話で述べた境界は compaction で失われうるため、恒久保証は deny ルール。deny / ask は project 側 `.claude/settings.json` でも workspace trust なしで適用される）
 
 ## Do Not
 

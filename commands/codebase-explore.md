@@ -40,7 +40,7 @@ CodebaseExplorer エージェントとして動作し、以下を実行する:
 ## Stop Condition
 
 - 調査で確信が持てない箇所は「要確認」と明示し、断言しない
-- 調査結果は Phase 3 の入力になる。Phase 2 の Stop Condition を満たしていれば、人間のレビューを待たずに Phase 3 へ進んでよい（中間成果物の受け入れは AI に委任 — `workflows/feature-development.md` §3.2）。確信が持てない箇所を「要確認」のまま先へ渡さない
+- 調査結果は Phase 3 の入力になる。Phase 2 の Stop Condition を満たしていれば、人間のレビューを待たずに Phase 3 へ進んでよい（中間成果物の受け入れは AI に委任 — `workflows/feature-development.md` §3.2）。確信が持てない箇所は〔未検証〕として渡してよいが、Phase 4 の採用根拠にはしない（`workflows/feature-development.md` Phase 2）
 
 ## ユースケース
 

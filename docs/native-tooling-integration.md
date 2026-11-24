@@ -229,7 +229,7 @@ Dynamic Workflows は多数の subagent を起動するため、通常の会話�
 
 ### 3.5 同梱ワークフロー
 
-このキットは Discovery sweep の実装例 [`dynamic-workflows/dev-agent-discovery.js`](../dynamic-workflows/dev-agent-discovery.js) を同梱しています。`install.sh` で `~/.claude/workflows/` に配置され、`/dev-agent-discovery` で起動できます。Phase 2 Discovery を並列化し、`templates/investigation-report-template.md` 構造の調査レポートを返します（内部に人間ゲートはありません。完了後、人間が Phase 3 へ進む前にレビューする立て付けです）。
+このキットは Discovery sweep の実装例 [`dynamic-workflows/dev-agent-discovery.js`](../dynamic-workflows/dev-agent-discovery.js) を同梱しています。`install.sh` で `~/.claude/workflows/` に配置され、`/dev-agent-discovery` で起動できます。Phase 2 Discovery を並列化し、`templates/investigation-report-template.md` 構造の調査レポートを返します（内部に人間ゲートはありません。出力は untrusted データなので、計画の根拠にする findings はメインセッションが出典ファイルで確かめてから使います — §3.3）。
 
 > Phase 7 の Review sweep など、他フェーズの workflow も同じ要領で追加できます。今回は最小スコープとして Discovery sweep のみ同梱しています。
 
@@ -314,18 +314,27 @@ Dynamic Workflows の `agent(prompt, { model, effort })` は、エージェン�
 
 会話中に述べた境界（「main には push しないで」等）は auto mode の分類器がブロック信号として扱いますが、**context compaction でその発言が消えると境界も失われえます**。公式ドキュメントも「恒久保証が必要なら deny ルールにせよ」と明記しています。さらに v2.1.203 以降、main への単純な push は分類器のデフォルトブロック対象から外れたため、**HDP に相当する境界は permissions.deny / ask として settings.json に固定** します。
 
-作業ブランチへの push は AI に委任した（workflow §3.2）ので、push 全体は塞ぎません。塞ぐのは **取り返しのつかない操作と外に出る操作** ですが、`Bash(...)` のパターンは前方一致なので、**引数の順番や書き方を変えるだけで素通りします**（`git push origin br --force`、`git push origin --delete br`、`git push origin :br`、`+refspec` など）。そのため役割を分けます:
+作業ブランチへの push は AI に委任した（workflow §3.2）ので、push 全体は塞ぎません。塞ぐのは **取り返しのつかない操作と外に出る操作** ですが、`Bash(...)` のパターンは文字列の照合なので、**引数の順番や書き方を変えるだけで素通りしえます**（照合の細かな仕様は公式 docs の permissions を確認のこと）（`git push origin br --force`、`git push origin --delete br`、`git push origin :br`、`+refspec` など）。そのため役割を分けます:
 
 | 守りたい境界 | 正（最終防衛線） | 補助 |
 |---|---|---|
-| main / 保護ブランチへの push、force push、ブランチ削除 | **リモートの branch protection**（直接 push を拒否、Allow force pushes / Allow deletions を off） | PreToolUse hook（push の引数と push 先の ref を解析して exit 2） |
-| Approve 済み PR への push | PreToolUse hook（push 先ブランチの PR の review 状態を `gh pr view` で判定して exit 2） | — |
-| マージ・タグ・Secret・外部への投稿 | permissions の **ask**（コマンドの先頭が決まっているので前方一致が効きやすい） | auto mode の分類器（§2.6） |
+| main / 保護ブランチへの push、force push、ブランチ削除 | **リモートの branch protection**（直接 push を拒否、Allow force pushes / Allow deletions を off） | PreToolUse hook（push の引数と push 先の ref を解析して exit 2）、permissions の deny（下記。素通りしうる補助） |
+| 保護されていないブランチ（作業ブランチ・他人のブランチ）への force push・削除 | **PreToolUse hook**（push の引数を解析して `--force` / `-f` / `+refspec` / `--delete` / `:ref` を検出し exit 2） | permissions の deny（下記） |
+| 他人のブランチへの push | PreToolUse hook（push 先ブランチの作成者・PR の作成者を `gh pr view` で判定して exit 2） | — |
+| Approve 済み PR への push | PreToolUse hook（push 先ブランチの PR の review 状態を `gh pr view` で判定して exit 2） | branch protection の **Dismiss stale pull request approvals**（push で承認を取り消し、承認済みのまま変わることを防ぐ） |
+| マージ・タグ・Secret・外部への投稿 | permissions の **ask** | auto mode の分類器（§2.6）。`gh api` 経由や MCP 経由の投稿は下記の ask で補う |
 
 ```jsonc
 // .claude/settings.json（例。網羅ではない。deny / ask は restrict 専用のため、project 側でも workspace trust なしで適用される）
 {
   "permissions": {
+    "deny": [
+      "Bash(git push --force*)",   // 補助。引数の順番を変えると素通りしうるので、正は hook と branch protection
+      "Bash(git push -f *)",
+      "Bash(git push --delete *)",
+      "Bash(git push * --force*)",
+      "Bash(git push * --delete *)"
+    ],
     "ask": [
       "Bash(gh pr merge *)",       // マージは人間（§3.1）
       "Bash(gh pr review *)",      // 外部への投稿（レビュー）
@@ -335,7 +344,9 @@ Dynamic Workflows の `agent(prompt, { model, effort })` は、エージェン�
       "Bash(gh secret *)",         // Secret 登録
       "Bash(git push --tags*)",    // タグの push（`git push origin v1.2` のような形は hook で補う）
       "Bash(git tag *)",           // タグ作成
+      "Bash(gh api *)",            // gh api -X POST/PUT でマージ・コメント・Secret を迂回できるため
       "Bash(npm run migrate *)"    // DB migration は実行前に必ず人間へ確認
+      // チャット・チケットへの投稿を MCP で行う場合は、その投稿ツール（mcp__<server>__<tool>）も ask に入れる
     ]
   }
 }

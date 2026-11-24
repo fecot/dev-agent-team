@@ -29,6 +29,7 @@ dev-agent-team は **アプリケーションコードではありません**。
 | `.dev-agent-team/requirements/` | Claude Code | Phase 1の要件整理成果物（Phase 別レイアウト） | 原則 Git 管理しない |
 | `.dev-agent-team/reports/` | Claude Code | 調査レポート、影響範囲分析（Phase 別レイアウト） | 原則 Git 管理しない |
 | `.dev-agent-team/plans/` | Claude Code | 実装計画、テスト計画（Phase 別レイアウト） | 原則 Git 管理しない |
+| `.dev-agent-team/logs/` | Claude Code | Phase 5 の実装ログ（Phase 別レイアウト） | 原則 Git 管理しない |
 | `.dev-agent-team/reviews/` | Claude Code | PRレビュー、PR説明文（Phase 別レイアウト） | 原則 Git 管理しない |
 | `.dev-agent-team/releases/` | Claude Code | リリース前チェックリスト（Phase 別レイアウト） | 原則 Git 管理しない |
 | `.dev-agent-team/archive/` | 任意 | 後から参照したい古い Run の保管先 | 原則 Git 管理しない |
@@ -147,7 +148,7 @@ dev-agent-team を初めて導入するときは、**変更範囲が小さく、
 - 大規模 DB 変更（テーブル分割・大量データのマイグレーション）
 - 個人情報の取り扱い変更（保存場所・暗号化・出力）
 - 外部連携の大幅変更（連携先追加・廃止・契約変更を伴うもの）
-- 緊急 hotfix（停止判断が多いワークフローは緊急対応に向かない。別途 hotfix workflow を用意）
+- 緊急 hotfix（Project Rules が未整備のうちは、`/run-feature-workflow` の Hotfix 種別でも停止判断が多い。Hotfix 種別の扱いは [`workflows/feature-development.md` §6.2](../workflows/feature-development.md#62-hotfix-サブフロー)）
 - 仕様が固まっていない大きな新機能（Phase 1 に入る前に Issue 自体の検討が必要）
 
 これらに取り組むのは、Project Rules が十分整備された **後** にしてください。
@@ -217,6 +218,7 @@ Project Rules は「Claude Code に正確に伝わる文書」である必要が
 │       ├── investigation.md
 │       ├── impact.md
 │       ├── implementation-plan.md
+│       ├── implementation-log.md
 │       ├── test-plan.md
 │       ├── pr-review.md
 │       ├── pr-description.md
@@ -224,7 +226,9 @@ Project Rules は「Claude Code に正確に伝わる文書」である必要が
 └── archive/                     ← 古い Run の保管先（任意）
 ```
 
-Phase 別レイアウト（`requirements/` `reports/` `plans/` `reviews/` `releases/`）も引き続きサポートしますが、新規導入は Run 単位を推奨します。
+Phase 別レイアウト（`requirements/` `reports/` `plans/` `logs/` `reviews/` `releases/`）も引き続きサポートしますが、新規導入は Run 単位を推奨します。
+
+> `project-context.md` の置き場は、**Run 単位なら `runs/{issue-id}/project-context.md`、Phase 別レイアウトなら `.dev-agent-team/project-context.md`（直下）** です。ほかの文書で「`.dev-agent-team/project-context.md`」と書いている箇所は、Phase 別レイアウトの場合の表記として読み替えてください（正はこの節）。
 
 ### Git 管理方針
 
@@ -238,6 +242,7 @@ Phase 別レイアウト（`requirements/` `reports/` `plans/` `reviews/` `relea
 - `.dev-agent-team/requirements/`
 - `.dev-agent-team/reports/`
 - `.dev-agent-team/plans/`
+- `.dev-agent-team/logs/`
 - `.dev-agent-team/reviews/`
 - `.dev-agent-team/releases/`
 - `.dev-agent-team/runs/`
@@ -253,6 +258,7 @@ Phase 別レイアウト（`requirements/` `reports/` `plans/` `reviews/` `relea
 .dev-agent-team/requirements/
 .dev-agent-team/reports/
 .dev-agent-team/plans/
+.dev-agent-team/logs/
 .dev-agent-team/reviews/
 .dev-agent-team/releases/
 .dev-agent-team/runs/

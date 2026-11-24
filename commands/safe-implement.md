@@ -1,3 +1,8 @@
+---
+description: 承認済みの実装計画に沿って、最小差分・小さいコミットで実装する
+argument-hint: <plan-file / 実装方針>
+---
+
 # Command: /safe-implement
 
 ## 概要

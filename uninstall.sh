@@ -27,8 +27,42 @@ CLAUDE_COMMANDS_DIR="${CLAUDE_COMMANDS_DIR:-${HOME}/.claude/commands}"
 CLAUDE_WORKFLOWS_DIR="${CLAUDE_WORKFLOWS_DIR:-${HOME}/.claude/workflows}"
 
 # install.sh と対称: グローバル配置されたコマンド・Dynamic Workflow の一覧（manifest.sh に一本化）
+if [ ! -f "${DEV_AGENT_TEAM_ROOT}/manifest.sh" ]; then
+  echo "[ERROR] manifest.sh が見つかりません: ${DEV_AGENT_TEAM_ROOT}/manifest.sh" >&2
+  echo "[ERROR] クローンを削除済みなら、~/.claude/commands/ と ~/.claude/workflows/ の dev-agent-team へのリンクを手動で削除してください。" >&2
+  exit 1
+fi
 # shellcheck source=manifest.sh
-source "$(dirname "$0")/manifest.sh"
+source "${DEV_AGENT_TEAM_ROOT}/manifest.sh"
+
+# install.sh と同じく ROOT を物理パスに正規化する（リンクは正規化後のパスで張られている）
+DEV_AGENT_TEAM_ROOT="$(cd "${DEV_AGENT_TEAM_ROOT}" && pwd -P)"
+
+# symlink のリンク先を物理パスに解決する（install.sh と同じ）
+resolve_link() {
+  local lt
+  lt="$(readlink "$1")"
+  case "${lt}" in
+    /*) ;;
+    *) lt="$(dirname "$1")/${lt}" ;;
+  esac
+  if [ -d "$(dirname "${lt}")" ]; then
+    printf '%s/%s' "$(cd "$(dirname "${lt}")" && pwd -P)" "$(basename "${lt}")"
+  else
+    printf '%s' "${lt}"
+  fi
+}
+
+# install.sh が退避した利用者のファイルを案内する（自動では戻さない）
+hint_backups() {
+  local target="$1" found
+  for found in "${target}".bak.*; do
+    if [ -e "${found}" ] || [ -L "${found}" ]; then
+      warn "        install 時に退避したファイルがあります: ${found}"
+      warn "        元に戻すなら: mv \"${found}\" \"${target}\""
+    fi
+  done
+}
 
 # ---- カラー出力 ----
 GREEN='\033[0;32m'
@@ -59,7 +93,7 @@ for cmd in "${COMMANDS[@]}"; do
   fi
 
   if [ -L "${TARGET}" ]; then
-    LINK_TARGET="$(readlink "${TARGET}")"
+    LINK_TARGET="$(resolve_link "${TARGET}")"
 
     # リンク先が dev-agent-team 配下でなければ別ツールの symlink とみなして消さない
     case "${LINK_TARGET}" in
@@ -76,6 +110,7 @@ for cmd in "${COMMANDS[@]}"; do
 
     if [ ! -e "${TARGET}" ] && [ ! -L "${TARGET}" ]; then
       REMOVED=$((REMOVED + 1))
+      hint_backups "${TARGET}"
     else
       error "[${INDEX}/${TOTAL}] 削除に失敗: ${TARGET}"
       exit 1
@@ -102,7 +137,7 @@ for wf in "${WORKFLOWS[@]}"; do
   fi
 
   if [ -L "${TARGET}" ]; then
-    LINK_TARGET="$(readlink "${TARGET}")"
+    LINK_TARGET="$(resolve_link "${TARGET}")"
 
     # リンク先が dev-agent-team 配下でなければ別ツールの symlink とみなして消さない
     case "${LINK_TARGET}" in
@@ -119,6 +154,7 @@ for wf in "${WORKFLOWS[@]}"; do
 
     if [ ! -e "${TARGET}" ] && [ ! -L "${TARGET}" ]; then
       REMOVED=$((REMOVED + 1))
+      hint_backups "${TARGET}"
     else
       error "[wf ${WF_INDEX}/${WF_TOTAL}] 削除に失敗: ${TARGET}"
       exit 1

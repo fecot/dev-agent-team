@@ -1,3 +1,8 @@
+---
+description: Issue を要件整理し、実装計画（最小案 / 標準案と確認事項）に変換する
+argument-hint: <Issue URL / 依頼内容> [--dry]
+---
+
 # Command: /issue-to-plan
 
 ## 概要
@@ -21,8 +26,8 @@
 ## 出力
 
 - 実装計画を以下のいずれかに保存する（どちらのレイアウトを使うかは対象リポジトリの既存運用に揃える。`commands/run-feature-workflow.md` と同じ判断基準）:
-  - Run 単位レイアウト: `.dev-agent-team/runs/{{issue-id}}/implementation-plan.md`
-  - Phase 単位互換レイアウト: `.dev-agent-team/plans/implementation-plan-{{issue-id}}.md`
+  - Run 単位レイアウト: `.dev-agent-team/runs/{issue-id}/implementation-plan.md`
+  - Phase 単位互換レイアウト: `.dev-agent-team/plans/implementation-plan-{issue-id}.md`
 - 原則 Git 管理しない一時成果物。詳細は [`docs/adoption-guide.md`](../docs/adoption-guide.md) §9 Artifacts Retention Policy
 - `--dry` オプションは保存自体を行わないため、本保存先ルールの影響を受けない
 

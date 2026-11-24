@@ -104,6 +104,7 @@
   - 関係する記録があれば **その前提から始める**（前回と同じ問いを人間に出し直さない）
   - 記録どうしが衝突する / 記録の前提が今回の依頼と噛み合わない場合は、AI が採用を決めず **人間に判断を戻す**
 - 対象リポジトリに Project Rules ファイルが存在しない場合は、`templates/project-rules-template.md` をコピーして埋めることを **人間に提案** する
+- Project Rules 冒頭の `dev_agent_team_min_version` を、`~/.claude/dev-agent-team/version.txt` の現在バージョンと **SemVer で比較** する（比較規則は `commands/adopt-project.md` の「バージョン比較ルール」節）。現在バージョンが下回るなら `cd ~/.claude/dev-agent-team && git pull` を人間に促す。フィールドが無い（Project Rules が `CLAUDE.md` だけ等）場合は比較をスキップし、`project-context.md` に「未ピン留め」と記録する。形式が SemVer でなければ停止する
 
 #### Output
 - 対象リポジトリ側に `.dev-agent-team/project-context.md` を作成
@@ -123,6 +124,7 @@
 - Project Rules と dev-agent-team の共通ルールが衝突しており、優先順位の判断材料が揃っていない
 - Decision Log の記録どうしが衝突している、または記録の前提が今回の依頼と噛み合わないまま、どちらを採るかの人間の判断が未取得
 - 衝突解消のための **人間の判断が未取得**
+- 〔機械検証可〕`~/.claude/dev-agent-team` の現在バージョンが Project Rules の `dev_agent_team_min_version` を下回っている、または `dev_agent_team_min_version` が SemVer 形式でない
 
 ---
 
@@ -589,7 +591,7 @@ ReleaseCaptain が:
 
 - グローバル SCSS / Tailwind / リセット CSS の **所在を把握** し、`project-context.md` に記録
 - ブラウザキャッシュ対策標準（hard reload / Playwright route interception）を確認し、`project-context.md` に記録
-- SCSS / CSS の **構文制約**（例: `//` コメント不可、ネスト深さ制限）を `project-rules.md` に追記
+- SCSS / CSS の **構文制約**（例: `//` コメント不可、ネスト深さ制限）を `project-context.md` に記録し、恒久ルールとして `project-rules.md` へ追記することを **人間に提案** する（Project Rules は対象リポジトリの所有物のため、AI は直接書き換えない）
 - webpack / vite / その他バンドラの **rebuild 完了確認方法**（出力 bundle の mtime / dev server の出力ログ）を `project-context.md` に記録
 
 #### Phase 1 追加項目
@@ -656,4 +658,11 @@ ReleaseCaptain が:
 
 ### 6.2 Hotfix サブフロー
 
-Phase 1〜4 を **圧縮**（要件は既知 / 影響範囲は限定 / 計画案は最小 1 案）して Phase 5 に最短到達する代わりに、Phase 7 / 8 は **通常以上に厳格** にする（ロールバック手順 / 監視観点を必ず明記、レビュー観点を省略しない）。詳細は別途運用知見が溜まり次第追記。
+Phase 1〜4 を **圧縮**（要件は既知 / 影響範囲は限定 / 計画案は最小 1 案）して Phase 5 に最短到達する代わりに、Phase 7 / 8 は **通常以上に厳格** にする。
+
+#### Stop Condition の上書き・追加
+
+- Phase 4 の「実装案が 1 案しかない」は、Hotfix では **「最小案 1 案 + 退けた代替案とその理由を 1 行」** に置き換える（案を並べる時間より、なぜ最小案で足りるかの説明を優先する）
+- 〔人間判断〕Phase 7: ロールバック手順と、リリース直後に見る監視項目が PR に書かれていない
+- 〔人間判断〕Phase 8: 恒久対応（根本原因の修正・再発防止）を別 Issue として起票するか、不要と判断した理由を残していない
+- Phase 7 のレビュー観点（DB 変更・権限・テスト結果）は **省略しない**。圧縮してよいのは Phase 1〜4 だけ

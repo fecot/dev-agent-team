@@ -1,3 +1,8 @@
+---
+description: 既存コードを調査し、関連ファイル・類似実装・既存パターンの地図を作る（読むだけで書かない）
+argument-hint: <調査対象 / キーワード>
+---
+
 # Command: /codebase-explore
 
 ## 概要

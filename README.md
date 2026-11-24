@@ -16,7 +16,7 @@ AIにただコードを書かせるのではなく、**要件整理・調査・�
 
 ## インストール
 
-dev-agent-team はホーム配下に1回だけクローンし、入口コマンド `/adopt-project` をシンボリックリンクで `~/.claude/commands/` に配置します。これにより、**どのプロジェクトディレクトリからでも** `/adopt-project` を発火できます。
+dev-agent-team はホーム配下に1回だけクローンし、`manifest.sh` に列挙したコマンド（`/adopt-project` / `/run-feature-workflow` / `/issue-to-plan` / `/codebase-explore` / `/safe-implement` / `/pr-review` の 6 本）と Dynamic Workflow（`/dev-agent-discovery`）を、シンボリックリンクで `~/.claude/commands/` / `~/.claude/workflows/` に配置します。これにより、**どのプロジェクトディレクトリからでも** 呼び出せます。
 
 > **対応環境**: macOS / Linux（WSL2 含む）。Windows ネイティブはサポート外です。
 
@@ -29,7 +29,7 @@ cd ~/.claude/dev-agent-team
 ./install.sh
 ```
 
-これで `~/.claude/commands/adopt-project.md` がシンボリックリンクとして配置され、Claude Code から `/adopt-project` が呼べるようになります。
+これで各コマンドがシンボリックリンクとして配置され、Claude Code から `/adopt-project` などが呼べるようになります。配置先に同名の自作ファイルや別ツールの symlink がある場合は、消さずに `.bak.<日時>` 付きで退避してからリンクします。
 
 ### 導入後の使い方
 
@@ -71,7 +71,11 @@ dev-agent-team/
 ├── examples/           # サンプルイシューと処理例
 ├── docs/               # 導入ガイド・運用ドキュメント・トラブルシューティング
 ├── CHANGELOG.md        # リリースごとの変更履歴 (Keep a Changelog 形式)
-├── version.txt         # dev-agent-team 本体のバージョン (/adopt-project が読む)
+├── CONCEPT.md          # 設計思想（型とは何か / AI と人間の役割分担）
+├── CLAUDE.md           # このリポジトリ自体を編集するときのルール
+├── LICENSE             # MIT License
+├── version.txt         # dev-agent-team 本体のバージョン (/adopt-project と Phase 0 が読む)
+├── manifest.sh         # グローバル配置するコマンド・Dynamic Workflow の一覧
 ├── install.sh          # 入口コマンド・Dynamic Workflow のインストール
 └── uninstall.sh        # 入口コマンド・Dynamic Workflow のアンインストール
 ```
@@ -129,7 +133,7 @@ dev-agent-team は **共通の開発支援キット** です。実際に使う�
 #### 起動前の準備
 
 1. **依頼テンプレを埋める** — [`templates/issue-template.md`](templates/issue-template.md) の **必須セクション**（背景・目的 / スコープ / 受け入れ基準）を埋めます。UI 変更 / 共通部品挙動 / 既知の罠 が関与する依頼は、該当する「該当時のみ必須」ブロックも埋めます。「コードを読めば分かる情報は省略 OK、依頼者の頭の中にしかない情報に集中」が方針
-2. **タスク種別を決める** — `通常` / `Migration` / `UI Replica` / `Hotfix` のいずれかを宣言します。Migration / UI Replica は Phase 0 / 2 / 4 / 5 に追加チェックが発火（[`workflows/feature-development.md` § 6](workflows/feature-development.md) 参照）。`通常` で十分なら省略可
+2. **タスク種別を決める** — `通常` / `Migration` / `UI Replica` / `Hotfix` のいずれかを宣言します。Migration / UI Replica は Phase 0 / 1 / 2 / 4 / 5 に追加チェックが発火（[`workflows/feature-development.md` § 6](workflows/feature-development.md) 参照）。`通常` で十分なら省略可
 
 #### 起動
 

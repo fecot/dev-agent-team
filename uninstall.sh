@@ -28,7 +28,7 @@ CLAUDE_WORKFLOWS_DIR="${CLAUDE_WORKFLOWS_DIR:-${HOME}/.claude/workflows}"
 
 # install.sh と対称: グローバル配置されたコマンド・Dynamic Workflow の一覧（manifest.sh に一本化）
 # shellcheck source=manifest.sh
-source "$(dirname "$0")/manifest.sh"
+source "${DEV_AGENT_TEAM_ROOT}/manifest.sh"
 
 # ---- カラー出力 ----
 GREEN='\033[0;32m'

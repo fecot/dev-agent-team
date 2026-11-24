@@ -1,3 +1,8 @@
+---
+description: 対象リポジトリに dev-agent-team を導入・診断・差分アップデートする（Project Rules の雛形作成を含む）
+argument-hint: [--dry]
+---
+
 # Command: /adopt-project
 
 ## Purpose
@@ -401,6 +406,7 @@ LLM が依存ライブラリから関連ツールを推測する際は、**以�
 .dev-agent-team/requirements/
 .dev-agent-team/reports/
 .dev-agent-team/plans/
+.dev-agent-team/logs/
 .dev-agent-team/reviews/
 .dev-agent-team/releases/
 .dev-agent-team/runs/

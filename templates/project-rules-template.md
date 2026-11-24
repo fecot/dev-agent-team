@@ -1,6 +1,6 @@
 ---
-dev_agent_team_version: v0.2.0
-dev_agent_team_min_version: v0.2.0
+dev_agent_team_version: v0.4.0
+dev_agent_team_min_version: v0.4.0
 ---
 
 # Project Rules: {{プロジェクト名}}
@@ -16,7 +16,7 @@ dev_agent_team_min_version: v0.2.0
 - **`dev_agent_team_version`**: このプロジェクトをセットアップした時点での dev-agent-team のバージョン。`/adopt-project` 実行時に書き込まれる想定
 - **`dev_agent_team_min_version`**: このプロジェクトが正しく動作するために最低限必要な dev-agent-team のバージョン。新しい Phase / Skill / Stop Condition に依存する内容を Project Rules に追記したら、このフィールドを上げる
 
-Phase 0（Project Context Loading）はこの値を読み、ホーム配下の `~/.claude/dev-agent-team` の現在バージョンと比較します。**現在バージョンが `dev_agent_team_min_version` を下回る場合は Stop Condition** を発動し、`cd ~/.claude/dev-agent-team && git pull` での更新を人間に促します（このバージョンチェック挙動の実装は `commands/adopt-project.md` および Phase 0 側の責務）。
+Phase 0（Project Context Loading）はこの値を読み、ホーム配下の `~/.claude/dev-agent-team` の現在バージョンと比較します。**現在バージョンが `dev_agent_team_min_version` を下回る場合は Stop Condition** を発動し、`cd ~/.claude/dev-agent-team && git pull` での更新を人間に促します（比較は `/adopt-project` と `workflows/feature-development.md` Phase 0 の両方で行う）。
 
 ホーム配下の dev-agent-team は **常に最新を追従** することを前提とし、プロジェクト側でバージョンを **ピン留めする** ことで「最新版で挙動が変わって急に Stop Condition が増えた」状態を避けつつ、過去バージョン依存の挙動も明示的に追跡できるようにしています。
 

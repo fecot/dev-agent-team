@@ -1,3 +1,8 @@
+---
+description: PR をレビューし、Go / No Go の判定材料と PR 説明文を出す（コードは編集しない。投稿は承認後）
+argument-hint: <PR 番号 / diff / ファイルパス> [--strict]
+---
+
 # Command: /pr-review
 
 ## 概要

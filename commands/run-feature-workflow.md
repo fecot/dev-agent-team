@@ -1,3 +1,8 @@
+---
+description: Issue / 開発依頼を 8 Phase の標準フロー（要件整理 → 調査 → 影響分析 → 計画 → 実装 → テスト → レビュー → リリース確認）で進める
+argument-hint: <Issue URL / 依頼内容> [--start-from <phase>] [--dry]
+---
+
 # Command: /run-feature-workflow
 
 ## Purpose
@@ -217,7 +222,7 @@ Issue / Run 単位で1ディレクトリにまとまるため、後から追跡�
 .dev-agent-team/
 ├── project-rules.md
 ├── runs/
-│   └── {{issue-id}}/
+│   └── {issue-id}/
 │       ├── project-context.md
 │       ├── requirements.md
 │       ├── investigation.md
@@ -236,17 +241,17 @@ Issue / Run 単位で1ディレクトリにまとまるため、後から追跡�
 | 成果物 | 生成 Phase | パス例 |
 |---|---|---|
 | Project Context | Phase 0 | `.dev-agent-team/project-context.md` |
-| Requirement Summary | Phase 1 | `.dev-agent-team/requirements/{{issue-id}}.md` |
-| Investigation Report | Phase 2 | `.dev-agent-team/reports/investigation-{{issue-id}}.md` |
-| Impact Analysis | Phase 3 | `.dev-agent-team/reports/impact-{{issue-id}}.md` |
-| Implementation Plan | Phase 4 | `.dev-agent-team/plans/implementation-plan-{{issue-id}}.md` |
-| Implementation Log | Phase 5 | `.dev-agent-team/logs/implementation-{{issue-id}}.md` |
-| Test Plan | Phase 6 | `.dev-agent-team/plans/test-plan-{{issue-id}}.md` |
-| PR Review Notes | Phase 7 | `.dev-agent-team/reviews/pr-review-{{issue-id}}.md` |
-| PR Description | Phase 7 | `.dev-agent-team/reviews/pr-description-{{issue-id}}.md` |
-| Release Checklist | Phase 8 | `.dev-agent-team/releases/release-checklist-{{issue-id}}.md` |
+| Requirement Summary | Phase 1 | `.dev-agent-team/requirements/{issue-id}.md` |
+| Investigation Report | Phase 2 | `.dev-agent-team/reports/investigation-{issue-id}.md` |
+| Impact Analysis | Phase 3 | `.dev-agent-team/reports/impact-{issue-id}.md` |
+| Implementation Plan | Phase 4 | `.dev-agent-team/plans/implementation-plan-{issue-id}.md` |
+| Implementation Log | Phase 5 | `.dev-agent-team/logs/implementation-{issue-id}.md` |
+| Test Plan | Phase 6 | `.dev-agent-team/plans/test-plan-{issue-id}.md` |
+| PR Review Notes | Phase 7 | `.dev-agent-team/reviews/pr-review-{issue-id}.md` |
+| PR Description | Phase 7 | `.dev-agent-team/reviews/pr-description-{issue-id}.md` |
+| Release Checklist | Phase 8 | `.dev-agent-team/releases/release-checklist-{issue-id}.md` |
 
-`.dev-agent-team/` ディレクトリは案件ごとの作業ディレクトリ配下に作る想定。`{{issue-id}}` は Issue 番号 / チケット ID / 短いスラッグなど、識別可能なものを使う。どちらのレイアウトを採用するかは Phase 0 で対象リポジトリの既存運用に揃える。
+`.dev-agent-team/` ディレクトリは案件ごとの作業ディレクトリ配下に作る想定。`{issue-id}` は Issue 番号 / チケット ID / 短いスラッグなど、識別可能なものを使う。どちらのレイアウトを採用するかは Phase 0 で対象リポジトリの既存運用に揃える。
 
 ## オプション
 

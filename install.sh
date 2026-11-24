@@ -21,10 +21,6 @@ DEV_AGENT_TEAM_ROOT="${DEV_AGENT_TEAM_ROOT:-${HOME}/.claude/dev-agent-team}"
 CLAUDE_COMMANDS_DIR="${CLAUDE_COMMANDS_DIR:-${HOME}/.claude/commands}"
 CLAUDE_WORKFLOWS_DIR="${CLAUDE_WORKFLOWS_DIR:-${HOME}/.claude/workflows}"
 
-# グローバル配置するコマンド・Dynamic Workflow の一覧（manifest.sh に一本化）
-# shellcheck source=manifest.sh
-source "$(dirname "$0")/manifest.sh"
-
 # pre-flight チェックの基準ファイル（クローン済みかの判定に使う）
 ENTRY_COMMAND="adopt-project.md"
 
@@ -62,6 +58,52 @@ if [ ! -f "${DEV_AGENT_TEAM_ROOT}/commands/${ENTRY_COMMAND}" ]; then
   exit 1
 fi
 
+# グローバル配置するコマンド・Dynamic Workflow の一覧（manifest.sh に一本化）。
+# ソースファイルと同じ DEV_AGENT_TEAM_ROOT から読み、両者が食い違わないようにする。
+# shellcheck source=manifest.sh
+source "${DEV_AGENT_TEAM_ROOT}/manifest.sh"
+
+# 退避ファイルの接尾辞（実行ごとに一意）
+BACKUP_SUFFIX=".bak.$(date +%Y%m%d-%H%M%S)"
+BACKED_UP=0
+
+# 1 件をリンクする。既存の配置先は次のように扱う:
+#   - dev-agent-team 配下を指す symlink → 張り直す（自分のリンクの更新）
+#   - それ以外（利用者の実ファイル・別ツールの symlink）→ 退避してからリンクする（黙って消さない）
+# 引数: $1=ラベル $2=ソース $3=配置先
+link_one() {
+  local label="$1" source="$2" target="$3"
+
+  if [ -L "${target}" ]; then
+    case "$(readlink "${target}")" in
+      "${DEV_AGENT_TEAM_ROOT}"/*) ;;
+      *)
+        warn "${label} 別ツールの symlink を退避: ${target} -> ${target}${BACKUP_SUFFIX}"
+        mv "${target}" "${target}${BACKUP_SUFFIX}"
+        BACKED_UP=$((BACKED_UP + 1))
+        ;;
+    esac
+  elif [ -e "${target}" ]; then
+    warn "${label} 既存の実ファイルを退避: ${target} -> ${target}${BACKUP_SUFFIX}"
+    mv "${target}" "${target}${BACKUP_SUFFIX}"
+    BACKED_UP=$((BACKED_UP + 1))
+  fi
+
+  ln -sfn "${source}" "${target}"
+
+  if [ -L "${target}" ]; then
+    info "${label} ${target} -> ${source}"
+  else
+    error "${label} シンボリックリンクの作成に失敗: ${target}"
+    exit 1
+  fi
+}
+
+# コマンドの frontmatter から description を取り出す（完了メッセージ用）
+describe() {
+  awk 'NR == 1 && $0 != "---" { exit } NR > 1 && $0 == "---" { exit } /^description: / { sub(/^description: /, ""); print; exit }' "$1" 2>/dev/null || true
+}
+
 # ---- インストール ----
 
 info "dev-agent-team のコマンドをインストールしています（${#COMMANDS[@]} 個）..."
@@ -83,19 +125,8 @@ for cmd in "${COMMANDS[@]}"; do
     continue
   fi
 
-  if [ -e "${TARGET}" ] || [ -L "${TARGET}" ]; then
-    warn "[${INDEX}/${TOTAL}] 既存ファイルを上書き: ${TARGET}"
-  fi
-
-  ln -sf "${SOURCE}" "${TARGET}"
-
-  if [ -L "${TARGET}" ]; then
-    info "[${INDEX}/${TOTAL}] ${TARGET} -> ${SOURCE}"
-    INSTALLED=$((INSTALLED + 1))
-  else
-    error "[${INDEX}/${TOTAL}] シンボリックリンクの作成に失敗: ${TARGET}"
-    exit 1
-  fi
+  link_one "[${INDEX}/${TOTAL}]" "${SOURCE}" "${TARGET}"
+  INSTALLED=$((INSTALLED + 1))
 done
 
 info "${INSTALLED}/${TOTAL} 個のコマンドをインストールしました。"
@@ -121,19 +152,8 @@ if [ "${#WORKFLOWS[@]}" -gt 0 ]; then
       continue
     fi
 
-    if [ -e "${WF_TARGET}" ] || [ -L "${WF_TARGET}" ]; then
-      warn "[${WF_INDEX}/${WF_TOTAL}] 既存ファイルを上書き: ${WF_TARGET}"
-    fi
-
-    ln -sf "${WF_SOURCE}" "${WF_TARGET}"
-
-    if [ -L "${WF_TARGET}" ]; then
-      info "[${WF_INDEX}/${WF_TOTAL}] ${WF_TARGET} -> ${WF_SOURCE}"
-      WF_INSTALLED=$((WF_INSTALLED + 1))
-    else
-      error "[${WF_INDEX}/${WF_TOTAL}] シンボリックリンクの作成に失敗: ${WF_TARGET}"
-      exit 1
-    fi
+    link_one "[${WF_INDEX}/${WF_TOTAL}]" "${WF_SOURCE}" "${WF_TARGET}"
+    WF_INSTALLED=$((WF_INSTALLED + 1))
   done
 
   info "${WF_INSTALLED}/${WF_TOTAL} 個の Dynamic Workflow をインストールしました。"
@@ -146,16 +166,21 @@ echo ""
 info "✅ dev-agent-team のインストールが完了しました。"
 echo ""
 echo "利用可能になったコマンド:"
-echo "  /adopt-project          — 対象プロジェクトに dev-agent-team を導入"
-echo "  /run-feature-workflow   — 8 Phase の標準開発フロー（入口）"
-echo "  /issue-to-plan          — Issue を実装計画に変換"
-echo "  /codebase-explore       — 既存コード調査"
-echo "  /safe-implement         — 計画書ベースの安全な実装"
-echo "  /pr-review              — PR 前レビュー"
+for cmd in "${COMMANDS[@]}"; do
+  printf '  %-24s — %s\n' "/${cmd%.md}" "$(describe "${DEV_AGENT_TEAM_ROOT}/commands/${cmd}")"
+done
 echo ""
-echo "利用可能になった Dynamic Workflow（要 v2.1.154+ / 有効化）:"
-echo "  /dev-agent-discovery    — Phase 2 Discovery の広域並列調査"
-echo ""
+if [ "${#WORKFLOWS[@]}" -gt 0 ]; then
+  echo "利用可能になった Dynamic Workflow（要 v2.1.154+ / 有効化）:"
+  for wf in "${WORKFLOWS[@]}"; do
+    echo "  /${wf%.js}"
+  done
+  echo ""
+fi
+if [ "${BACKED_UP}" -gt 0 ]; then
+  warn "既存ファイル ${BACKED_UP} 件を ${BACKUP_SUFFIX} 付きで退避しました（不要なら手動で削除）。"
+  echo ""
+fi
 echo "次の手順:"
 echo "  1. 対象プロジェクトのディレクトリで Claude Code を開く"
 echo "  2. /adopt-project を実行してプロジェクトをセットアップ"

@@ -104,7 +104,7 @@
   - 関係する記録があれば **その前提から始める**（前回と同じ問いを人間に出し直さない）
   - 記録どうしが衝突する / 記録の前提が今回の依頼と噛み合わない場合は、AI が採用を決めず **人間に判断を戻す**
 - 対象リポジトリに Project Rules ファイルが存在しない場合は、`templates/project-rules-template.md` をコピーして埋めることを **人間に提案** する
-- Project Rules 冒頭の `dev_agent_team_min_version` を、`~/.claude/dev-agent-team/version.txt` の現在バージョンと **SemVer で比較** する（比較規則は `commands/adopt-project.md` の分岐 D / E と同じ）。現在バージョンが下回るなら `cd ~/.claude/dev-agent-team && git pull` を人間に促す
+- Project Rules 冒頭の `dev_agent_team_min_version` を、`~/.claude/dev-agent-team/version.txt` の現在バージョンと **SemVer で比較** する（比較規則は `commands/adopt-project.md` の「バージョン比較ルール」節）。現在バージョンが下回るなら `cd ~/.claude/dev-agent-team && git pull` を人間に促す。フィールドが無い（Project Rules が `CLAUDE.md` だけ等）場合は比較をスキップし、`project-context.md` に「未ピン留め」と記録する。形式が SemVer でなければ停止する
 
 #### Output
 - 対象リポジトリ側に `.dev-agent-team/project-context.md` を作成
@@ -124,7 +124,7 @@
 - Project Rules と dev-agent-team の共通ルールが衝突しており、優先順位の判断材料が揃っていない
 - Decision Log の記録どうしが衝突している、または記録の前提が今回の依頼と噛み合わないまま、どちらを採るかの人間の判断が未取得
 - 衝突解消のための **人間の判断が未取得**
-- 〔機械検証可〕`~/.claude/dev-agent-team` の現在バージョンが Project Rules の `dev_agent_team_min_version` を下回っている
+- 〔機械検証可〕`~/.claude/dev-agent-team` の現在バージョンが Project Rules の `dev_agent_team_min_version` を下回っている、または `dev_agent_team_min_version` が SemVer 形式でない
 
 ---
 

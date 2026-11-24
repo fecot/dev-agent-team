@@ -1,6 +1,6 @@
 ---
 description: Issue を要件整理し、実装計画（最小案 / 標準案と確認事項）に変換する
-argument-hint: <Issue URL / 依頼内容>
+argument-hint: <Issue URL / 依頼内容> [--dry]
 ---
 
 # Command: /issue-to-plan

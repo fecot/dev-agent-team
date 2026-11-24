@@ -60,12 +60,46 @@ fi
 
 # グローバル配置するコマンド・Dynamic Workflow の一覧（manifest.sh に一本化）。
 # ソースファイルと同じ DEV_AGENT_TEAM_ROOT から読み、両者が食い違わないようにする。
+if [ ! -f "${DEV_AGENT_TEAM_ROOT}/manifest.sh" ]; then
+  error "manifest.sh が見つかりません: ${DEV_AGENT_TEAM_ROOT}/manifest.sh"
+  error "クローンが壊れている可能性があります。git status で確認してください。"
+  exit 1
+fi
 # shellcheck source=manifest.sh
 source "${DEV_AGENT_TEAM_ROOT}/manifest.sh"
 
-# 退避ファイルの接尾辞（実行ごとに一意）
+# ROOT を物理パスに正規化する（末尾スラッシュ・symlink 経由の表記ゆれで、自分のリンクを他人のものと誤判定しない）
+DEV_AGENT_TEAM_ROOT="$(cd "${DEV_AGENT_TEAM_ROOT}" && pwd -P)"
+
+# 退避ファイルの接尾辞
 BACKUP_SUFFIX=".bak.$(date +%Y%m%d-%H%M%S)"
 BACKED_UP=0
+
+# symlink のリンク先を物理パスに解決する（リンク先のディレクトリが無ければそのまま返す）
+resolve_link() {
+  local lt
+  lt="$(readlink "$1")"
+  case "${lt}" in
+    /*) ;;
+    *) lt="$(dirname "$1")/${lt}" ;;
+  esac
+  if [ -d "$(dirname "${lt}")" ]; then
+    printf '%s/%s' "$(cd "$(dirname "${lt}")" && pwd -P)" "$(basename "${lt}")"
+  else
+    printf '%s' "${lt}"
+  fi
+}
+
+# 既存の退避ファイルと衝突しない退避先を返す（同じ秒に再実行しても上書きしない）
+backup_path() {
+  local base="$1${BACKUP_SUFFIX}" candidate n=1
+  candidate="${base}"
+  while [ -e "${candidate}" ] || [ -L "${candidate}" ]; do
+    candidate="${base}.${n}"
+    n=$((n + 1))
+  done
+  printf '%s' "${candidate}"
+}
 
 # 1 件をリンクする。既存の配置先は次のように扱う:
 #   - dev-agent-team 配下を指す symlink → 張り直す（自分のリンクの更新）
@@ -74,18 +108,21 @@ BACKED_UP=0
 link_one() {
   local label="$1" source="$2" target="$3"
 
+  local dest
   if [ -L "${target}" ]; then
-    case "$(readlink "${target}")" in
+    case "$(resolve_link "${target}")" in
       "${DEV_AGENT_TEAM_ROOT}"/*) ;;
       *)
-        warn "${label} 別ツールの symlink を退避: ${target} -> ${target}${BACKUP_SUFFIX}"
-        mv "${target}" "${target}${BACKUP_SUFFIX}"
+        dest="$(backup_path "${target}")"
+        warn "${label} 別ツールの symlink を退避: ${target} -> ${dest}"
+        mv "${target}" "${dest}"
         BACKED_UP=$((BACKED_UP + 1))
         ;;
     esac
   elif [ -e "${target}" ]; then
-    warn "${label} 既存の実ファイルを退避: ${target} -> ${target}${BACKUP_SUFFIX}"
-    mv "${target}" "${target}${BACKUP_SUFFIX}"
+    dest="$(backup_path "${target}")"
+    warn "${label} 既存の実ファイルを退避: ${target} -> ${dest}"
+    mv "${target}" "${dest}"
     BACKED_UP=$((BACKED_UP + 1))
   fi
 

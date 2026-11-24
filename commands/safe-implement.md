@@ -20,7 +20,7 @@ argument-hint: <plan-file / 実装方針>
 1. 実装計画を読み込む（`/issue-to-plan` の出力 or インライン入力）
    - **UI を伴う実装の場合**: 着手前に視覚仕様スケッチ（ASCII / mock 等）があることを確認する。なければ Phase 4 に戻して作る。完成後にスケッチ・スクショ・計測値を並べて示す（事後確認）
 2. `git branch --show-current` で作業ブランチにいることを確認してから、ImplementationDriver として実装を開始（main / master 上なら止まる）
-3. 実装中に不明点が出たら停止して確認を求める
+3. 実装中に意図に関わる不明点が出たら停止して確認を求める（実装上の選択で済むものは、理由を実装ログに残して進める）
 4. 実装完了後にセルフレビューを実施
 5. TestStrategist としてテスト観点を出力
 6. テストコードを生成
@@ -44,7 +44,7 @@ UI に影響する実装では、**1 修正ごとに** `skills/browser-verificat
 
 Phase 5 でテスト緑化 / lint / typecheck を `/goal` の機械的サブループで収束させる場合、ユーザー設定（`~/.claude/settings.json`）の `autoMode.classifyAllShell`（全 shell コマンドを auto-mode classifier でホワイトリスト判定）を有効化すると、手動承認でループが止まりにくくなる。auto mode 中は破壊的コマンド（`git reset --hard` / `git push --force` / `terraform destroy` 等）が明示指示なしに自動ブロックされるため、無人ループでも取り返しのつかない操作は走らない。
 
-ただし **Phase 5 のセーフガード（計画外変更は人間へ）は維持** する。⚠️ プロジェクトごとに有効化するかは人間判断。詳細は [`docs/native-tooling-integration.md`](../docs/native-tooling-integration.md) § 2.5 / § 2.6。
+ただし **Phase 5 のセーフガード（スコープの変わる計画外変更は人間へ）は維持** する。⚠️ プロジェクトごとに有効化するかは人間判断。詳細は [`docs/native-tooling-integration.md`](../docs/native-tooling-integration.md) § 2.5 / § 2.6。
 
 ## 原則
 

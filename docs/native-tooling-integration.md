@@ -100,7 +100,7 @@ Claude Code は速いペースで更新される。全変更を追随して本�
 
 以下は `/goal` で自動化してはいけません（§5 の人間判断のコア）:
 
-- Human Decision Point = `workflows/feature-development.md` §3.1 の〔事前承認〕（意図の確定 / DB・権限の方針 / スコープの変わる変更 / 共有環境での実行 / 取り返しのつかないリモート操作 / 外部への投稿 / マージ可否 / リリース可否）
+- Human Decision Point = `workflows/feature-development.md` §3.1 の〔事前承認〕すべて（一覧はそちらが正）
 - 「承認・判断」を要する Stop Condition
 
 **ルール: `/goal` の終了条件には必ず「かつ 未解決の Human Decision Point がない」を含め、人間ゲートの直前で必ず停止させる。**
@@ -134,7 +134,7 @@ Claude Code は速いペースで更新される。全変更を追随して本�
 `autoMode.classifyAllShell` は、**全 shell コマンドを auto-mode の classifier に通してホワイトリスト判定させる** settings.json のキーです。`/goal` の機械的サブループ（テスト緑化 / lint / typecheck）を Phase 5 で回すとき、毎コマンドの手動承認を classifier 判定に置き換えられるため、ループが手動プロンプトで止まらず収束まで進みます。
 
 - **推奨場面**: Phase 5 / 6 で `/goal` の機械的ループを回すとき（無人で収束させたい区間）。
-- **ガードレール**: これは実行環境の利便設定であり、**キットの動作（Phase / Stop Condition / Human Decision Point）は変えません**。Phase 5 の Stop Condition「計画外の変更が必要になったら人間へ」と必ず併用し、classifier がホワイトリスト外と判定したコマンドや計画外の変更は、これまで通り人間に返します。
+- **ガードレール**: これは実行環境の利便設定であり、**キットの動作（Phase / Stop Condition / Human Decision Point）は変えません**。Phase 5 の Stop Condition「スコープの変わる計画外変更は人間へ」と必ず併用し、classifier がホワイトリスト外と判定したコマンドやスコープの変わる変更は、これまで通り人間に返します。
 - **⚠️ 人間判断が必要**: プロジェクトごとに有効化するか否かは人間が決める（自動承認の許容度はリポジトリのリスク許容度に依存する）。設定の有無でキットの手順自体は変わらないため、本ドキュメントは「そういう設定があり、Phase 5 の `/goal` ループで有用」という案内に留めます。
 - **設定の置き場所**: autoMode 系設定はもともと共有プロジェクト設定（`.claude/settings.json`）からは読み込まれず、**v2.1.207 以降は repo 内の `.claude/settings.local.json` からも読み込まれません**。したがって有効化は各利用者が **自分のユーザー設定（`~/.claude/settings.json`）** で行います。「プロジェクトごとに有効化するか否かは人間が決める」は変わりませんが、その決定の実装先はユーザー設定です。
 
@@ -173,7 +173,7 @@ auto mode 中は、明示指示がない限り **破壊的コマンド（`git re
   - `origin/<base>` から新しいブランチを切るときは `--no-track` を添える。付けないと upstream が `origin/<base>` になり、base が進むたびに push が「遅れ」として差し戻される
   - この hook は **判定だけ** を機械化する。解消方法（上流へ揃える・退避する等）は人間が選ぶ。hook のメッセージで `reset` / `stash` を指示しない
 
-- **〔人間判断〕タグの Stop Condition は hooks 化禁止**。自動判定に置き換えること自体が人間ゲートの代行になるため、受入基準の承認・採用案の意思決定・マージ / リリース可否などは hook にしません（§5 の人間判断のコア）。
+- **〔人間判断〕タグの Stop Condition は hooks 化禁止**。自動判定に置き換えること自体が人間ゲートの代行になるため、受け入れ基準の承認・スコープの変わる判断・マージ / リリース可否などは hook にしません（§5 の人間判断のコア）。ただし〔人間判断〕の手前の状態検出（push 先が Approve 済み PR のブランチか、等）は hook で止めて人間に返してよい（workflow §1 のタグ規約）。
 - フィードバック文言は **具体的な合格条件** で書く（「テストを直す」ではなく「`npm test` の全出力に `0 failures` が表示されるまで停止しない」）。
 - prompt-based hook の判定タイムアウトは既定 30 秒（利用時に公式 docs で再確認のこと）。
 - `TaskCreated` / `TaskCompleted` は通常のタスクシステム（TaskCreate ツール。キットが Phase 単位タスク管理で既に使用）で発火し、**Agent Teams は不要**。`TeammateIdle` のみ Agent Teams（実験的機能）前提です。
@@ -204,10 +204,10 @@ kit が既に言語化している型は、そのまま workflow の QA パタ�
 
 ### 3.3 ガードレール
 
-- **1 workflow = 1 フェーズ以内** に閉じる。フェーズ境界（人間ゲート）は **ワークフローの外** で人間に返す。
+- **1 workflow = 1 フェーズ以内** に閉じる。フェーズ境界（Stop Condition の判定点。〔事前承認〕が含まれればそこで人間）は **ワークフローの外** に置く。
 - **Human Decision Point を無人ワークフロー内に埋め込まない**。8 Phase 全体を 1 本の無人ワークフローにはしない（複数の人間ゲートを内包するため哲学と矛盾する）。
 - workflow の出力はその Phase の Output。次フェーズへ進むかは Phase の Stop Condition で決まり、中間成果物の受け入れは AI に委任される（workflow §3.2）。ただし出力に〔事前承認〕に当たる判断（スコープの変更等）が含まれれば、人間に返す。
-- **agent 間データは untrusted として扱う**（Cross-Session Messaging Security / v2.1.166 の影響確認結果）。subagent の出力を後段 agent のプロンプトへ渡す際、その内容を指示として解釈・自動実行しない。キットで cross-session/cross-agent のデータ授受があるのは Dynamic Workflow のみ（例: `dynamic-workflows/dev-agent-discovery.js` が reader の findings を synthesize agent へ渡す）で、いずれも **調査結果の集約に限定**され、workflow 出力に対する自動アクションは行わない（人間レビューゲートが後段にあるため）。→ **キットのガードレール変更は不要。影響なし。**
+- **agent 間データは untrusted として扱う**（Cross-Session Messaging Security / v2.1.166 の影響確認結果）。subagent の出力を後段 agent のプロンプトへ渡す際、その内容を指示として解釈・自動実行しない。キットで cross-session/cross-agent のデータ授受があるのは Dynamic Workflow のみ（例: `dynamic-workflows/dev-agent-discovery.js` が reader の findings を synthesize agent へ渡す）で、いずれも **調査結果の集約に限定**され、workflow 出力に対する自動アクションは行わない。v0.4.0 まではその後段に人間レビュー（Phase 2 → 3）があったが、中間成果物の受け入れを AI に委任したため（workflow §3.2）、**人間の目の代わりに出典の照合を置く**: 計画の根拠にする findings は、メインセッションが出典のファイルを自分で開いて確かめてから使い、確かめていないものは〔未検証〕として扱う。Phase 7 の独立検証でも、計画が依拠した findings の出典を実コードと照合する。
 - **公式裏付け**: 公式ドキュメントは「**mid-run のユーザー入力は不可 — ステージ間のサインオフが必要なら、各ステージを別ワークフローとして実行せよ**」（Behavior and limits: "No mid-run user input — For sign-off between stages, run each stage as its own workflow"）と明記している。キットの「1 workflow = 1 フェーズ」ルールは、この公式設計と一致する。
 - **ultracode の線引き**: プロンプト内キーワード `ultracode`（v2.1.160 で `workflow` から改称）は **そのタスク 1 件だけ** をワークフロー化するオプトインであり、§3.1 の適用場面ならフェーズ内で使ってよい。一方 **`/effort ultracode`（v2.1.203+）はセッション中の全ての実質的タスクを自動でワークフロー化するモード** で、(i) auto permission mode ではワークフロー起動プロンプト自体がスキップされ、(ii) Large workflow 警告も表示されなくなる。したがって **Human Decision Point を含む 8 Phase 運用中のセッションでは有効化しない**。使う場合は単一フェーズ内の大規模 fan-out 作業に限定し、フェーズ境界前に `/effort high` 等へ戻す（設定はセッション限りで、新セッションではリセットされる）。
 
@@ -225,7 +225,7 @@ Dynamic Workflows は多数の subagent を起動するため、通常の会話�
 
 - subagent は既定でバックグラウンド実行になり、親は完了通知で合流する（v2.1.198。通常セッションの subagent 挙動であり、Dynamic Workflow スクリプト内の並列性自体は従来どおり）
 - レートリミット / サーバーエラーで切断された subagent は **部分成果を親へ返し**、API エラーは成功として偽装されず親に正しく伝播する（v2.1.199 のバグ修正）
-- これを根拠に、Discovery fan-out で一部 reader が失敗しても workflow を中断せず、**部分 findings を回収し、未調査サブシステム / ファイルを「欠落」として明記した上で** 人間レビューに回すことをリカバリ手順とする（実装例: `dynamic-workflows/dev-agent-discovery.js`）。欠落を隠して完全なレポートを装わない — 欠落自体が人間の判断材料である。
+- これを根拠に、Discovery fan-out で一部 reader が失敗しても workflow を中断せず、**部分 findings を回収し、未調査サブシステム / ファイルを「欠落」として明記した上で** Phase の Output として後段に渡すことをリカバリ手順とする（欠落が残るなら Phase 2 の Stop Condition「関連ファイルが特定できていない」に当たる）（実装例: `dynamic-workflows/dev-agent-discovery.js`）。欠落を隠して完全なレポートを装わない — 欠落自体が、次に何を確かめるべきかの材料である。
 
 ### 3.5 同梱ワークフロー
 
@@ -289,7 +289,7 @@ Dynamic Workflows の `agent(prompt, { model, effort })` は、エージェン�
 - DB スキーマ変更 / 権限変更の方針（Phase 3 / 4 / 8）
 - スコープの変わる変更（Phase 4 / 5）
 - 共有環境での実行（Phase 5〜8。コマンド・対象環境・パラメータ・書き込まれるもの（コードで確認）を提示してから。フラグ名は保証ではない）
-- 取り返しのつかないリモート操作（Phase 5〜8。main / master・保護ブランチ・他人のブランチ・Approve 済み PR への push、force push、Secret 登録、タグ作成。①②の実装は §5.2）
+- 取り返しのつかないリモート操作（Phase 5〜8。main / master・保護ブランチ・他人のブランチ・Approve 済み PR への push、force push、リモートブランチ削除、Secret 登録、タグ作成。①②の実装は §5.2）
 - 外部への投稿（Phase 7。レビューコメント・チケット・チャット）
 - マージ可否（Phase 7）
 - リリース可否 / ロールバック判断（Phase 8）
@@ -302,7 +302,7 @@ Dynamic Workflows の `agent(prompt, { model, effort })` は、エージェン�
 
 ### 5.1 人間ゲートのランタイム裏付け
 
-上記の「判断は人間」原則は文書上の約束に留まらず、Claude Code のランタイム側でも裏付けられています（公式 CHANGELOG 確認済み）:
+上記の「意図と取り返しのつかない判断は人間」原則は文書上の約束に留まらず、Claude Code のランタイム側でも裏付けられています（公式 CHANGELOG 確認済み）:
 
 1. **エージェント間メッセージは承認にならない** — エージェント間メッセージがユーザー承認として扱われない境界は従来から存在し、v2.1.198 で「親エージェントのメッセージは通常のタスク指示として扱い、**承認としては決して扱わない**（"an agent's message is still never treated as the user's approval"）」と明文化・再確認された。多段 subagent 構成でも、承認は人間からしか発生しない。
 2. **AskUserQuestion は既定で人間を待ち続ける** — v2.1.200 以降、AskUserQuestion ダイアログは既定で自動続行しない（アイドルタイムアウトは `/config` での明示オプトイン）。Phase 承認を AskUserQuestion で実装する場合の安全根拠になる。**人間ゲートを担うセッションではアイドルタイムアウトをオプトインしない** こと。
@@ -314,27 +314,35 @@ Dynamic Workflows の `agent(prompt, { model, effort })` は、エージェン�
 
 会話中に述べた境界（「main には push しないで」等）は auto mode の分類器がブロック信号として扱いますが、**context compaction でその発言が消えると境界も失われえます**。公式ドキュメントも「恒久保証が必要なら deny ルールにせよ」と明記しています。さらに v2.1.203 以降、main への単純な push は分類器のデフォルトブロック対象から外れたため、**HDP に相当する境界は permissions.deny / ask として settings.json に固定** します。
 
-作業ブランチへの push は AI に委任した（workflow §3.2）ので、push 全体は塞ぎません。塞ぐのは **取り返しのつかない push** です:
+作業ブランチへの push は AI に委任した（workflow §3.2）ので、push 全体は塞ぎません。塞ぐのは **取り返しのつかない操作と外に出る操作** ですが、`Bash(...)` のパターンは前方一致なので、**引数の順番や書き方を変えるだけで素通りします**（`git push origin br --force`、`git push origin --delete br`、`git push origin :br`、`+refspec` など）。そのため役割を分けます:
+
+| 守りたい境界 | 正（最終防衛線） | 補助 |
+|---|---|---|
+| main / 保護ブランチへの push、force push、ブランチ削除 | **リモートの branch protection**（直接 push を拒否、Allow force pushes / Allow deletions を off） | PreToolUse hook（push の引数と push 先の ref を解析して exit 2） |
+| Approve 済み PR への push | PreToolUse hook（push 先ブランチの PR の review 状態を `gh pr view` で判定して exit 2） | — |
+| マージ・タグ・Secret・外部への投稿 | permissions の **ask**（コマンドの先頭が決まっているので前方一致が効きやすい） | auto mode の分類器（§2.6） |
 
 ```jsonc
-// .claude/settings.json（deny / ask は restrict 専用のため、project 側でも workspace trust なしで適用される）
+// .claude/settings.json（例。網羅ではない。deny / ask は restrict 専用のため、project 側でも workspace trust なしで適用される）
 {
   "permissions": {
-    "deny": [
-      "Bash(git push --force *)",       // force push は deny（履歴の上書きは取り返しがつかない）
-      "Bash(git push -f *)",
-      "Bash(git push --delete *)"       // リモートブランチ削除も deny
-    ],
     "ask": [
-      "Bash(gh pr merge *)",            // マージは人間（§3.1）
-      "Bash(npm run migrate *)"         // DB migration は実行前に必ず人間へ確認
+      "Bash(gh pr merge *)",       // マージは人間（§3.1）
+      "Bash(gh pr review *)",      // 外部への投稿（レビュー）
+      "Bash(gh pr comment *)",     // 外部への投稿（コメント）
+      "Bash(gh issue *)",          // 外部への投稿（Issue の作成・コメント）
+      "Bash(gh release *)",        // リリース
+      "Bash(gh secret *)",         // Secret 登録
+      "Bash(git push --tags*)",    // タグの push（`git push origin v1.2` のような形は hook で補う）
+      "Bash(git tag *)",           // タグ作成
+      "Bash(npm run migrate *)"    // DB migration は実行前に必ず人間へ確認
     ]
   }
 }
 ```
 
-- **main / master・保護ブランチへの push は、引数パターンでは塞がない**。`Bash(git push origin main:*)` のような引数を制約するパターンは fragile（`git push -u origin main` / `git push origin HEAD:main` / 変数展開で素通りする）。最終防衛線は **リモート側の branch protection**、補助は **PreToolUse hook**（push 先の ref を解決して main / master・保護ブランチ・Approve 済み PR のブランチなら exit 2）に置く
-- 委任を広げる前に branch protection が効いていることを確認する。**リモート側で main への直接 push が拒否される状態** が、作業ブランチへの push を AI に任せる前提条件
+- **委任を広げる前に、branch protection が効いていることを確認する**。リモート側で main への直接 push・force push・削除が拒否される状態が、作業ブランチへの push を AI に任せる前提条件（workflow §3.2 の前提）。branch protection が使えないリポジトリ（プランの制約等）では、push を委任しない
+- 引数パターンで main への push を塞ごうとしない（`Bash(git push origin main:*)` は `git push -u origin main` / `git push origin HEAD:main` / 変数展開で素通りする）
 - `Tool(param:value)` 形式のパラメータマッチは **deny / ask 専用**（allow には使えない）。使えるのは `Agent(model:opus)` / `Bash(run_in_background:true)` など公式記載のパラメータのみで、**`Bash` の `command` や `Read` の `file_path` には使えない**（書いても無視され、起動時警告が出る）。
 - 未承認 PR の自動マージは auto mode がブロックする（v2.1.195+、v2.1.205 まで段階拡張）。
 
@@ -359,7 +367,7 @@ Agent Teams は、リードエージェントが複数のチームメイト（�
 チームメイトを plan mode に留め、リードが承認するまで実装させない運用ができますが、この **リードの plan approval は「品質フィルタ」であり、Human Decision Point の代替ではありません**。公式仕様上もリードは承認判断を自律的に行います（"The lead makes approval decisions autonomously" — 承認基準はプロンプトで注入可能）。
 
 - **リード（AI）承認 = 品質フィルタ**: 計画の粒度・整合性チェック。承認基準はリードへのプロンプトで与える
-- **人間承認 = 意思決定**: HDP（受入基準 / 採用案 / マージ / リリース / DB・権限変更）は、**人間がリードセッションで直接承認** する
+- **人間承認 = 意思決定**: HDP（workflow §3.1 の〔事前承認〕。意図の確定 / スコープの変わる変更 / マージ / リリース / DB・権限の方針など）は、**人間がリードセッションで直接承認** する
 
 「AI が AI を承認する仕組み」は最も誤解されやすい新機能であり、リード承認を人間ゲートの代替にした時点でキットの核原則が崩れます。
 
@@ -479,7 +487,7 @@ Anthropic 公式の [Claude Fable 5 プロンプティングガイド](https://p
 
 agents/ / skills/ を見直す際（§9 Follow-up のネイティブ化を含む）は、この基準で監査します。
 
-> **監査済み（2026-08）**: agents/ 7 本・skills/ 8 本をこの基準で棚卸しした結果、いずれも既に「原則 + why」の粒度に収まっており、大きな削減対象は無かった（マイクロ指示の集積は `commands/adopt-project.md` に集中しており、重複・開発メモの削除で対応済み）。以後の見直しは、ファイルを新規追加・大幅改稿したときにこの基準を通せば足りる——定期的な全量再監査はしない（§1.2 と同じく、維持コストに上限を設ける）。**小さな追記の積み重ねはこの監査に掛からない**ので、実運用由来の追記は §1.3 の 3 分岐を必ず通す（v0.4.0 の時点で、監査対象外だった `commands/run-feature-workflow.md` の Execution Rules が 26 項目まで膨らんでいた。v0.5.0 で原則 3 つとゲート参照に統合）。
+> **監査済み（2026-08）**: agents/ 7 本・skills/ 8 本をこの基準で棚卸しした結果、いずれも既に「原則 + why」の粒度に収まっており、大きな削減対象は無かった（マイクロ指示の集積は `commands/adopt-project.md` に集中しており、重複・開発メモの削除で対応済み）。以後の見直しは、ファイルを新規追加・大幅改稿したときにこの基準を通せば足りる——定期的な全量再監査はしない（§1.2 と同じく、維持コストに上限を設ける）。**小さな追記の積み重ねはこの監査に掛からない**ので、実運用由来の追記は §1.3 の 3 分岐を必ず通す（v0.4.0 の時点で、監査対象外だった `commands/run-feature-workflow.md` の Execution Rules が 26 項目まで膨らんでいた。次版で原則 3 つとゲート参照に統合）。
 
 ### 8.3 委任・長時間実行のプロンプトパターン
 

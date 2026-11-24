@@ -1,7 +1,7 @@
 export const meta = {
   name: 'dev-agent-discovery',
   description:
-    'dev-agent-team Phase 2 (Discovery) の広域並列調査。候補ファイルを並列で読み解き、investigation-report 構造の調査レポートを返す。内部に人間ゲートはない（完了後、人間が Phase 3 へ進む前にレビューする立て付け）。',
+    'dev-agent-team Phase 2 (Discovery) の広域並列調査。候補ファイルを並列で読み解き、investigation-report 構造の調査レポートを返す。内部に人間ゲートはない。出力は untrusted データとして扱い、計画の根拠にする主張はメインセッションが出典ファイルで確かめてから使う。',
   whenToUse:
     '多ファイル / 多サブシステムにまたがる既存コード調査を並列で高速化したいとき。Migration の多コンポーネント計測にも流用できる。',
   phases: [
@@ -151,7 +151,7 @@ if (files.length === 0) {
 // pipeline で 1 ファイル = 1 reader。barrier を張らず、読み終わったものから次へ流れる。
 // v2.1.199 以降 subagent のエラーは親へ正しく伝播するため、reader 単体の失敗で
 // workflow 全体を中断しないよう per-item で catch する。失敗分は「未調査」として
-// 欠落を明示し、人間レビュー（Phase 3 前）に届ける（部分結果リカバリ）。
+// 欠落を明示して後段に届ける（部分結果リカバリ。欠落は Phase 2 の Stop Condition で判定）。
 phase('Read')
 const readResults = await pipeline(files, (path) =>
   agent(
@@ -178,7 +178,7 @@ phase('Synthesize')
 const failedNote =
   failedPaths.length > 0
     ? `\n\n注意: 以下のファイルは reader 失敗により未調査（要フォロー）。調査済みとして扱わず、` +
-      `openQuestions に「未調査: <path>（Phase 3 前に人間が確認）」として必ず列挙すること:\n` +
+      `openQuestions に「未調査: <path>（Phase 3 前に要確認）」として必ず列挙すること:\n` +
       failedPaths.map((p) => `- ${p}`).join('\n')
     : ''
 const report = await agent(

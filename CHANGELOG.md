@@ -23,7 +23,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`commands/run-feature-workflow.md` の Execution Rules を 26 項目 → 8 項目に統合** (キット全体レビュー由来。§8.2「ゲートは列挙、行動は簡潔」に反して、Insights 由来の行動ルールが 1 件 1 項目で積み上がっていた) — 行動ルールを 3 原則に統合: **原則α「主張には根拠の種類を付ける」**（現状 / 提案ラベル・確信度タグ・コメントを根拠にしない・実行後の結果確認）、**原則β「人間の入力は人間が出す」**（値を上書きしない・質問には回答のみ・回答待ちの選択を先取りしない・待つものを番号で示す）、**原則γ「止まるのは人間が要るときだけ」**（止まる理由を事前承認・Stop Condition・セーフガード・機密検知に限る・最後に状態表）。各原則に why を 1 文。ゲート系（共有環境・リモート・git 状態）は workflow Phase 5 / 7 の Stop Condition を正として参照のみに。**PR #35 で混入した「止まる理由を限る」ルールとセーフガード節の矛盾もここで解消**（原則γに「セーフガード」を明記）。事故例は本 CHANGELOG の過去エントリに残っているため、本文からは削った
 - **`templates/claude-md-snippet.md` に「常時ルール」を追加** — Execution Rules は `/run-feature-workflow` の中でしか読まれず、調査だけの依頼・運用作業・単独の `/pr-review` / `/safe-implement` では効いていなかった（キット全体レビュー由来。Insights の事故の多くはこうしたセッションで起きていた）。対象リポジトリの CLAUDE.md に常に載る場所へ、区分の要約と 3 原則を 6 行で置く
 - **実運用由来の取り込み基準を新設（`docs/native-tooling-integration.md` §1.3）** — §1.2（ネイティブ機能の取り込み基準）の姉妹。取り込む前に (a) ゲート → workflow に 1 箇所だけ列挙 / (b) 現場の知識 → 対象リポジトリの台帳 / (c) 汎用の行動 → 既存原則の why に 1 句足す。足せないときだけ新しい原則にし、**同時に 1 つ削る**。機械で検査できるものは文章より先に仕組みにする。§8.2 の監査は「新規追加・大幅改稿」でしか発火せず小さな追記の積み重ねを捉えられなかったため、この入口で止める
+- **委任の安全条件（独立レビュー由来。委任を広げたことで崩れた前提の手当て）** — (1) Dynamic Workflow の出力は untrusted のまま人間の目を通らなくなったため、**計画の根拠にする findings はメインセッションが出典ファイルで確かめてから使う**（docs §3.3 の「後段に人間レビューがあるので影響なし」を撤回）、(2) 作業ブランチへの push の委任に **前提** を付けた — リモートで main への直接 push が拒否される / push で共有環境へのデプロイが起動しない（CI 定義で確認）/ Draft PR が使える。満たさなければ事前承認、(3) Draft → Ready は **CI が無い・checks 0 件なら緑とみなさない**。CI 待ちは同一セッション内の時間上限つきで、予約・再アームで待たない（2026-08 の自己チェックイン暴走と同じ形を作らない）、(4) §5.2 の permissions 例を書き直し — 前方一致の deny は引数の順番で素通りするため、force push・ブランチ削除・main への push は **リモートの branch protection を正** とし、hook を補助にする。マージ・タグ・Secret・外部への投稿（`gh pr review|comment`・`gh issue`）は ask、(5) 原則γの停止理由に「質問への回答」を戻した（統合時に落ちていた）、共有環境ゲートの「パラメータの復唱」を戻した、(6) タグなしの Stop Condition は「AI が判定して根拠を残す（`/goal`・hooks には載せない）」と再定義し、〔人間判断〕の手前の状態検出は hook で止めてよいと明記、(7) プロジェクト側で委任を **広げられる** のは 4 条件を満たすものだけ（マージ・リリース・共有環境・外部投稿は移せない）、(8) Phase 8 の Decision Log 抽出に「人間が覆した AI の委任判断」を追加
 - その他: `templates/project-rules-template.md` の Human Approval Required を区分に合わせ、プロジェクト側で委任範囲を狭める / 広げる書き方を明記。`commands/codebase-explore.md`・`docs/adoption-guide.md`・`README.md`・`examples/sample-workflow-output.md`（Phase 4 の採用判断が「案の違いがスコープに及ぶので人間」になる例として書き直し）を追随。Migration のゴール定義の承認者を「CEO/PM」から「承認者（Project Rules で定義）」に
+
+### 移行（v0.4.0 以前に導入済みのプロジェクト）
+
+- **`/adopt-project` を再実行** して、CLAUDE.md の dev-agent-team セクション（`<!-- dev-agent-team:start -->` 〜 `end`）を新しい常時ルールに置き換える
+- `.dev-agent-team/project-rules.md` の **Human Approval Required** に旧テンプレの「リモートリポジトリの状態変更（`git push` / PR 作成・更新 …）は明示承認」が残っていると、Rule Priority によりそちらが優先され、push は引き続き毎回承認になる（安全側に倒れるだけで壊れはしない）。委任に移すなら、その行を新テンプレの「取り返しのつかないリモート操作」「外部への投稿」「マージ・リリース」の 3 行に置き換える
+- 委任に移す前に、対象リポジトリで **branch protection**（main への直接 push・force push・削除の拒否）と、**作業ブランチへの push でデプロイが起動しないこと** を確認する。満たせないなら Human Approval Required に「push・PR 作成は事前承認」と書いておく
+- `.claude/settings.json` に旧 §5.2 の `"Bash(git push *)"` deny を入れている場合、そのままだと作業ブランチへの push も止まる（委任しない運用ならそのままでよい）
 
 ## [v0.4.0] - 2026-11-24
 

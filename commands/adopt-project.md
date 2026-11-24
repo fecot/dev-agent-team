@@ -574,7 +574,7 @@ CLAUDE.md に dev-agent-team の連携セクションマーカーが見つかり
 - バージョンタグの付け間違い（例: 実際は v0.1.0 で動くのに `min_version: v0.2.0` と書かれている）
 - 環境制約で dev-agent-team を更新できない場合
 
-**重要: `/adopt-project` は `min_version` の値を書き換えない**。利用者が `.dev-agent-team/project-rules.md` を **手動で開いて編集** する。これは「判断は人間が行う」という dev-agent-team の根幹思想と整合する。
+**重要: `/adopt-project` は `min_version` の値を書き換えない**。利用者が `.dev-agent-team/project-rules.md` を **手動で開いて編集** する。これは「取り返しのつかない判断は人間が行う」という dev-agent-team の根幹思想と整合する（ピン留めを上げると、そのプロジェクトで有効になる Stop Condition が変わるため）。
 
 ```
 .dev-agent-team/project-rules.md の冒頭フロントマターを開いて、

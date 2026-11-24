@@ -177,7 +177,7 @@ Project Rules は「Claude Code に正確に伝わる文書」である必要が
 - **Project Rules は定期的に更新する** — 技術スタックやコマンドが変わったら、コードと同じタイミングでルールも更新する。古いルールは害でしかない
 - **ワークフロー実行後の成果物は PR に添付・参照する** — `.dev-agent-team/plans/implementation-plan-*.md` や `pr-description-*.md` を PR にリンクすると、レビュアーが判断材料を辿れる
 - **Stop Condition が出たら無理に進めない** — Stop Condition は「ここで止まれ」というシグナルです。バイパスせず、足りない情報を埋めるか、人間に判断を仰ぐ
-- **Human Decision Point は人間が判断する** — 採用案・DB変更承認・リリース可否は AI に委ねない。判断材料は AI が出すが、判断は人間がする
+- **Human Decision Point は人間が判断する** — 〔事前承認〕（一覧は `workflows/feature-development.md` §3.1）は AI に委ねない。実装案の採用や中間成果物の受け入れは AI に委任し、根拠と証拠を残させる（`workflows/feature-development.md` §3）
 - **失敗事例が出たら Project Rules に反映する** — レビューで指摘されたパターン、本番で起きた問題、見落とした観点は、次回以降の Phase 0 で拾えるように **Project Rules に追記** する。これによって型は時間とともに鍛えられる
 - **下した判断は理由とセットで残す** — Human Decision Point で人間が決めたことは、そのままでは実行ごとの成果物と一緒に消える。次も同じ問いが来る判断は、Phase 8 の振り返りで「判断 / 理由 / 再利用条件」を抽出し、**Project Rules の Decision Log に追記** する。Phase 0 で読み込まれるため、次の案件は前回と同じ前提から始められる（同じ判断を毎回一から説明し直さなくて済む）
 - **Artifacts は原則として一時成果物として扱う** — 詳細は §9 Artifacts Retention Policy を参照
